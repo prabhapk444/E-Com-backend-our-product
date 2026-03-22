@@ -8,6 +8,8 @@ class Cors {
     $allowed_origins = [
         'http://localhost:3000',
         'http://localhost:8080',
+        'https://shop.thriveboost.in',
+        'https://ecombackend.thriveboost.in'
     ];
 
     $origin = $_SERVER['HTTP_ORIGIN'] ?? null;
