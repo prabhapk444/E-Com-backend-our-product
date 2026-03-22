@@ -25,6 +25,10 @@ class User_model extends CI_Model {
         return $this->db->where('email', $email)->get($this->table)->row();
     }
 
+    public function get_by_username($username) {
+    return $this->db->where('name', $username)->get($this->table)->row();
+}
+
     // Get user by ID
     public function get_by_id($id) {
         return $this->db->where('id', $id)->get($this->table)->row();

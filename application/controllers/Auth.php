@@ -63,6 +63,36 @@ class Auth extends CI_Controller {
         ]);
     }
 
+
+  public function superadmin_login() {
+    $input = json_decode(file_get_contents("php://input"), true);
+
+    if (empty($input['username']) || empty($input['password'])) {
+        return error_response("Username & Password required");
+    }
+
+    $user = $this->User_model->get_by_username($input['username']);
+
+    if (!$user || !password_verify($input['password'], $user->password)) {
+        return unauthorized("Invalid credentials");
+    }
+
+    if ($user->role != 1) {
+        return unauthorized("Access denied. Not super admin");
+    }
+
+    $token = $this->Jwt_model->encode([
+        'uid' => $user->id,
+        'email' => $user->email,
+        'role' => $user->role
+    ]);
+
+    return success_response("Superadmin login success", [
+        'token' => $token,
+        'user' => $user
+    ]);
+}
+
     // FORGOT PASSWORD (SEND LINK)
     public function forgot_password() {
         $input = json_decode(file_get_contents("php://input"), true);
@@ -101,14 +131,22 @@ class Auth extends CI_Controller {
         return success_response("Password reset successful");
     }
 
-    // PROFILE (JWT PROTECTED)
-    public function profile() {
-        $user = $this->Jwt_model->verify_token();
+  
+    public function update_profile() {
+    $user = $this->Jwt_model->verify_token();
+    if (!$user) return unauthorized("Invalid token");
 
-        if (!$user) return unauthorized("Invalid token");
+    $input = json_decode(file_get_contents("php://input"), true);
 
-        $data = $this->User_model->get_by_id($user->uid);
+   $data = [
+    'name' => $input['name'],
+    'email' => $input['email'],
+    'phonenumber' => $input['phonenumber'],
+    'place' => $input['place']
+];
 
-        return success_response("Profile fetched", $data);
-    }
+    $this->db->where('id', $user->uid)->update('users', $data);
+
+    return success_response("Profile updated");
+}
 }

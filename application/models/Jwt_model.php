@@ -39,18 +39,19 @@ class Jwt_model extends CI_Model {
 
 
     // Verify token
-   public function verify_token($token) {
+   public function verify_token($token = null) {
     if (empty($token)) {
         $token = $this->get_token_from_header();
     }
+
     if (empty($token)) {
         log_message('error', 'JWT Verify Error: Missing token');
         return false;
     }
+
     $token = trim($token); 
     return $this->decode($token);
 }
-
 
 public function get_token_from_header() {
     // Try CI method

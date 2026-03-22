@@ -58,4 +58,5 @@ $route['api/register'] = 'auth/register';
 $route['api/login'] = 'auth/login';
 $route['api/forgot-password'] = 'auth/forgot_password';
 $route['api/reset-password'] = 'auth/reset_password';
-$route['api/profile'] = 'auth/profile';
+$route['api/update-profile'] = 'auth/update_profile';
+$route['api/superadmin/login'] = 'auth/superadmin_login';
