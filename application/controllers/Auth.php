@@ -128,6 +128,92 @@ class Auth extends CI_Controller {
     ]);
 }
 
+public function google_register() {
+    $input = json_decode(file_get_contents("php://input"), true);
+    $token = $input['token'] ?? null;
+
+    if (!$token) return error_response("Token missing");
+
+    // Verify token with Google
+    $url = "https://oauth2.googleapis.com/tokeninfo?id_token=" . $token;
+    $response = file_get_contents($url);
+    $payload = json_decode($response);
+
+    if (!$payload || !isset($payload->email)) {
+        return unauthorized("Invalid Google token");
+    }
+
+    $email = $payload->email;
+    $name = $payload->name ?? explode('@', $email)[0];
+
+    $user = $this->User_model->get_by_email($email);
+    if ($user) return conflict("User already exists");
+
+    $data = [
+        'name' => $name,
+        'email' => $email,
+        'password' => password_hash(bin2hex(random_bytes(8)), PASSWORD_BCRYPT), 
+        'role' => 3
+    ];
+    $this->User_model->register($data);
+    $user = $this->User_model->get_by_email($email);
+
+    $jwt = $this->Jwt_model->encode([
+        'uid' => $user->id,
+        'email' => $user->email,
+        'role' => $user->role
+    ]);
+
+    return success_response("Google registration success", [
+        'token' => $jwt,
+        'user' => $user
+    ]);
+}
+
+public function google_login() {
+    $input = json_decode(file_get_contents("php://input"), true);
+    $token = $input['token'] ?? null;
+
+    if (!$token) return error_response("Token missing");
+
+    // Verify token with Google
+    $url = "https://oauth2.googleapis.com/tokeninfo?id_token=" . $token;
+    $response = file_get_contents($url);
+    $payload = json_decode($response);
+
+    if (!$payload || !isset($payload->email)) {
+        return unauthorized("Invalid Google token");
+    }
+
+    $email = $payload->email;
+    $name = $payload->name ?? explode('@', $email)[0];
+
+    $user = $this->User_model->get_by_email($email);
+
+    if (!$user) {
+        // Register user automatically
+        $data = [
+            'name' => $name,
+            'email' => $email,
+            'password' => password_hash(bin2hex(random_bytes(8)), PASSWORD_BCRYPT), 
+            'role' => 3
+        ];
+        $this->User_model->register($data);
+        $user = $this->User_model->get_by_email($email);
+    }
+
+    $jwt = $this->Jwt_model->encode([
+        'uid' => $user->id,
+        'email' => $user->email,
+        'role' => $user->role
+    ]);
+
+    return success_response("Google login success", [
+        'token' => $jwt,
+        'user' => $user
+    ]);
+}
+
    public function forgot_password() {
     $input = json_decode(file_get_contents("php://input"), true);
 

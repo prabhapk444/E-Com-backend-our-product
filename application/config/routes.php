@@ -61,3 +61,5 @@ $route['api/reset-password'] = 'auth/reset_password';
 $route['api/update-profile'] = 'auth/update_profile';
 $route['api/superadmin/login'] = 'auth/superadmin_login';
 $route['auth/admin_login'] = 'auth/admin_login'; 
+$route['api/google-register'] = 'auth/google_register';
+$route['api/google-login'] = 'auth/google_login';
