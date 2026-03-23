@@ -63,3 +63,11 @@ $route['api/superadmin/login'] = 'auth/superadmin_login';
 $route['auth/admin_login'] = 'auth/admin_login'; 
 $route['api/google-register'] = 'auth/google_register';
 $route['api/google-login'] = 'auth/google_login';
+
+
+$route['auth/get_admins']             = 'auth/get_admins';
+$route['auth/save_admin']             = 'auth/save_admin';
+$route['auth/delete_admin/(:num)']   = 'auth/delete_admin/$1';
+$route['auth/toggle_admin_status/(:num)'] = 'auth/toggle_admin_status/$1';
+$route['superadmin/admins'] = 'superadmin/get_admins';
+$route['superadmin/stats'] = 'superadmin/get_stats';

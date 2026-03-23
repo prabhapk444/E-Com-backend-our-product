@@ -271,4 +271,83 @@ public function google_login() {
 
     return success_response("Profile updated");
 }
+
+
+// Get all admin users (role = 2)
+public function get_admins() {
+    $user = $this->Jwt_model->verify_token();
+    if (!$user || intval($user->role) !== 1) return unauthorized("Access denied");
+
+    $admins = $this->db->where('role', 2)->get('users')->result();
+    return success_response("Admins fetched", $admins); // <-- send array directly
+}
+
+// Create or update admin
+public function save_admin() {
+    $user = $this->Jwt_model->verify_token();
+    if (!$user || $user->role != 1) return unauthorized("Access denied");
+
+    $input = json_decode(file_get_contents("php://input"), true);
+
+    if (isset($input['id']) && !empty($input['id'])) {
+        // Update existing admin
+        $data = [
+            'name' => $input['name'],
+            'email' => $input['email'],
+            'phonenumber' => $input['phone'] ?? null,
+            'place' => $input['place'] ?? null,
+        ];
+        if (!empty($input['password'])) {
+            $data['password'] = password_hash($input['password'], PASSWORD_BCRYPT);
+        }
+
+        $this->db->where('id', $input['id'])->update('users', $data);
+        return success_response("Admin updated");
+    } else {
+        // Create new admin
+        $data = [
+            'name' => $input['name'],
+            'email' => $input['email'],
+            'password' => password_hash($input['password'], PASSWORD_BCRYPT),
+            'place' => $input['place'] ?? null,
+            'role' => 2,
+            'createdat' => date('Y-m-d'),
+        ];
+        $this->db->insert('users', $data);
+        return success_response("Admin created");
+    }
+}
+
+// controllers/Auth.php
+public function toggle_admin_status($id)
+{
+    $this->load->model('User_model');
+
+    $admin = $this->User_model->get_by_id($id);
+    if (!$admin) {
+        echo json_encode(['status' => false, 'message' => 'Admin not found']);
+        return;
+    }
+
+    // Use correct column name
+    $currentStatus = $admin->isenabled; // lowercase, match your DB
+    $newStatus = $currentStatus ? 0 : 1;
+
+    $updated = $this->User_model->update_status($id, $newStatus);
+
+    if ($updated) {
+        echo json_encode(['status' => true, 'message' => 'Status updated', 'newStatus' => $newStatus]);
+    } else {
+        echo json_encode(['status' => false, 'message' => 'Failed to update status']);
+    }
+}
+// Delete admin
+public function delete_admin($id) {
+    $user = $this->Jwt_model->verify_token();
+    if (!$user || $user->role != 1) return unauthorized("Access denied");
+
+    $this->db->where('id', $id)->where('role', 2)->delete('users');
+    return success_response("Admin deleted");
+}
+
 }
