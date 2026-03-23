@@ -59,10 +59,13 @@ class User_model extends CI_Model {
         return $this->db->where('token', $token)
                         ->update('password_reset_tokens', ['used' => 1]);
     }
-    public function update_status($id, $isEnabled)
+
+    
+   public function update_status($id, $isEnabled)
 {
     return $this->db
-                ->where('id', $id)
-                ->update($this->table, ['isEnabled' => $isEnabled ? 1 : 0]);
+        ->where('id', $id)
+        ->update($this->table, ['is_enabled' => $isEnabled ? 1 : 0]);
 }
+
 }

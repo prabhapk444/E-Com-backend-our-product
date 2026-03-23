@@ -43,29 +43,45 @@ class Auth extends CI_Controller {
     }
 
     // LOGIN
-    public function login() {
-        $input = json_decode(file_get_contents("php://input"), true);
+  public function login() {
+    $input = json_decode(file_get_contents("php://input"), true);
 
-        $user = $this->User_model->get_by_email($input['email']);
-
-        if (!$user || !password_verify($input['password'], $user->password)) {
-            return unauthorized("Invalid credentials");
-        }
-
-        $token = $this->Jwt_model->encode([
-            'uid' => $user->id,
-            'email' => $user->email,
-            'role' => $user->role
-        ]);
-
-        return success_response("Login successful", [
-            'token' => $token,
-            'user' => $user
-        ]);
+  
+    if (!$input || empty($input['email']) || empty($input['password'])) {
+        return error_response("Email & Password required");
     }
 
 
-  public function superadmin_login() {
+    $user = $this->User_model->get_by_email($input['email']);
+
+    if (!$user) {
+        return unauthorized("Invalid credentials");
+    }
+
+
+    if (!password_verify($input['password'], $user->password)) {
+        return unauthorized("Invalid credentials");
+    }
+
+  
+    if (intval($user->is_enabled) !== 1) {
+        return unauthorized("Your account is disabled. Contact admin.");
+    }
+
+  
+    $token = $this->Jwt_model->encode([
+        'uid' => $user->id,
+        'email' => $user->email,
+        'role' => intval($user->role)
+    ]);
+
+    return success_response("Login successful", [
+        'token' => $token,
+        'user' => $user
+    ]);
+}
+
+ public function superadmin_login() {
     $input = json_decode(file_get_contents("php://input"), true);
 
     if (empty($input['username']) || empty($input['password'])) {
@@ -78,14 +94,20 @@ class Auth extends CI_Controller {
         return unauthorized("Invalid credentials");
     }
 
-    if ($user->role != 1) {
+  
+    if (intval($user->role) !== 1) {
         return unauthorized("Access denied. Not super admin");
+    }
+
+   
+    if (intval($user->is_enabled) !== 1) {
+        return unauthorized("Your account is disabled. Contact admin.");
     }
 
     $token = $this->Jwt_model->encode([
         'uid' => $user->id,
         'email' => $user->email,
-        'role' => $user->role
+        'role' => intval($user->role)
     ]);
 
     return success_response("Superadmin login success", [
@@ -95,31 +117,33 @@ class Auth extends CI_Controller {
 }
 
 
-  public function admin_login() {
+ public function admin_login() {
     $input = json_decode(file_get_contents("php://input"), true);
 
     if (empty($input['email']) || empty($input['password'])) {
         return error_response("Email & Password required");
     }
 
-  
     $user = $this->User_model->get_by_email($input['email']);
-
 
     if (!$user || !password_verify($input['password'], $user->password)) {
         return unauthorized("Invalid credentials");
     }
 
-   
-    if ($user->role != 2) {
+  
+    if (intval($user->role) !== 2) {
         return unauthorized("Access denied. Not admin");
     }
 
+  
+    if (intval($user->is_enabled) !== 1) {
+        return unauthorized("Your account is disabled. Contact admin.");
+    }
 
     $token = $this->Jwt_model->encode([
         'uid' => $user->id,
         'email' => $user->email,
-        'role' => $user->role
+        'role' => intval($user->role)
     ]);
 
     return success_response("Admin login successful", [
@@ -330,7 +354,7 @@ public function toggle_admin_status($id)
     }
 
     // Use correct column name
-    $currentStatus = $admin->isenabled; // lowercase, match your DB
+    $currentStatus = $admin->is_enabled; // lowercase, match your DB
     $newStatus = $currentStatus ? 0 : 1;
 
     $updated = $this->User_model->update_status($id, $newStatus);
@@ -348,6 +372,53 @@ public function delete_admin($id) {
 
     $this->db->where('id', $id)->where('role', 2)->delete('users');
     return success_response("Admin deleted");
+}
+
+// Get all normal users (role = 3)
+public function get_users() {
+    $user = $this->Jwt_model->verify_token();
+    if (!$user || intval($user->role) !== 2) {
+        return unauthorized("Access denied");
+    }
+
+    $users = $this->db
+        ->select('id, name, email, place, phonenumber, createdat, is_enabled')
+        ->where('role', 3)
+        ->get('users')
+        ->result();
+
+    return success_response("Users fetched", $users);
+}
+
+public function toggle_user_status($id)
+{
+    $user = $this->Jwt_model->verify_token();
+
+    // Allow admin + super admin
+    if (!$user || !in_array(intval($user->role), [1, 2])) {
+        return unauthorized("Access denied");
+    }
+
+    $this->load->model('User_model');
+
+    $userData = $this->User_model->get_by_id($id);
+
+    if (!$userData || intval($userData->role) !== 3) {
+        return error_response("User not found or invalid role");
+    }
+
+    $currentStatus = $userData->is_enabled;
+    $newStatus = $currentStatus ? 0 : 1;
+
+    $updated = $this->User_model->update_status($id, $newStatus);
+
+    if ($updated) {
+        return success_response("User status updated", [
+            'newStatus' => $newStatus
+        ]);
+    } else {
+        return error_response("Failed to update");
+    }
 }
 
 }

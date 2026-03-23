@@ -69,5 +69,16 @@ $route['auth/get_admins']             = 'auth/get_admins';
 $route['auth/save_admin']             = 'auth/save_admin';
 $route['auth/delete_admin/(:num)']   = 'auth/delete_admin/$1';
 $route['auth/toggle_admin_status/(:num)'] = 'auth/toggle_admin_status/$1';
+$route['api/user/toggle/(:num)'] = 'auth/toggle_user_status/$1';
 $route['superadmin/admins'] = 'superadmin/get_admins';
 $route['superadmin/stats'] = 'superadmin/get_stats';
+$route['api/users'] = 'auth/get_users';
+
+
+
+
+$route['api/feedback/submit'] = 'feedback/submit';
+$route['api/feedbacks'] = 'feedback/get_all';
+$route['api/feedback/update/(:num)'] = 'feedback/update/$1';
+$route['api/feedback/toggle/(:num)'] = 'feedback/toggle_status/$1';
+$route['api/feedback/enabled'] = 'feedback/get_enabled';
