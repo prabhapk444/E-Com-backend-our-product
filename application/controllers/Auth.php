@@ -9,6 +9,7 @@ class Auth extends CI_Controller {
         $this->load->model('Jwt_model');
         $this->load->library('email_library');
         $this->load->helper('response');
+         $this->load->helper('url');
     }
 
     // REGISTER
@@ -93,43 +94,78 @@ class Auth extends CI_Controller {
     ]);
 }
 
-    // FORGOT PASSWORD (SEND LINK)
-    public function forgot_password() {
-        $input = json_decode(file_get_contents("php://input"), true);
 
-        $user = $this->User_model->get_by_email($input['email']);
-        if (!$user) return not_found("User not found");
+  public function admin_login() {
+    $input = json_decode(file_get_contents("php://input"), true);
 
-        $token = bin2hex(random_bytes(32));
-        $expires = date('Y-m-d H:i:s', strtotime('+1 hour'));
-
-        $this->User_model->save_reset_token([
-            'user_id' => $user->id,
-            'token' => $token,
-            'expires_at' => $expires
-        ]);
-
-        $reset_link = base_url("reset-password?token=" . $token);
-
-        $this->email_library->send_password_reset($user->email, $reset_link);
-
-        return success_response("Reset link sent to email");
+    if (empty($input['email']) || empty($input['password'])) {
+        return error_response("Email & Password required");
     }
+
+  
+    $user = $this->User_model->get_by_email($input['email']);
+
+
+    if (!$user || !password_verify($input['password'], $user->password)) {
+        return unauthorized("Invalid credentials");
+    }
+
+   
+    if ($user->role != 2) {
+        return unauthorized("Access denied. Not admin");
+    }
+
+
+    $token = $this->Jwt_model->encode([
+        'uid' => $user->id,
+        'email' => $user->email,
+        'role' => $user->role
+    ]);
+
+    return success_response("Admin login successful", [
+        'token' => $token,
+        'user' => $user
+    ]);
+}
+
+   public function forgot_password() {
+    $input = json_decode(file_get_contents("php://input"), true);
+
+    $user = $this->User_model->get_by_email($input['email']);
+    if (!$user) return not_found("User not found");
+
+    // Generate OTP
+    $otp = rand(100000, 999999);
+    $expires = date('Y-m-d H:i:s', strtotime('+5 minutes'));
+
+    // Save OTP
+    $this->User_model->save_reset_token([
+        'user_id' => $user->id,
+        'token' => $otp, // use token column as OTP
+        'expires_at' => $expires
+    ]);
+
+    // Send OTP email
+    $this->email_library->send_otp_email($user->email, $otp);
+
+    return success_response("OTP sent to email");
+}
 
     // RESET PASSWORD
-    public function reset_password() {
-        $input = json_decode(file_get_contents("php://input"), true);
+   public function reset_password() {
+    $input = json_decode(file_get_contents("php://input"), true);
 
-        $tokenData = $this->User_model->get_valid_token($input['token']);
-        if (!$tokenData) return error_response("Invalid or expired token");
+    $tokenData = $this->User_model->get_valid_token($input['otp']);
 
-        $password = password_hash($input['password'], PASSWORD_BCRYPT);
+    if (!$tokenData) return error_response("Invalid or expired OTP");
 
-        $this->User_model->update_password($tokenData->user_id, $password);
-        $this->User_model->mark_token_used($input['token']);
+    $password = password_hash($input['password'], PASSWORD_BCRYPT);
 
-        return success_response("Password reset successful");
-    }
+    $this->User_model->update_password($tokenData->user_id, $password);
+    $this->User_model->mark_token_used($input['otp']);
+
+    return success_response("Password reset successful");
+}
 
   
     public function update_profile() {

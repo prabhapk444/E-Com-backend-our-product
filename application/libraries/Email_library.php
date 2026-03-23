@@ -150,4 +150,45 @@ class Email_library {
 
         return $this->send($email, $subject, $body, true);
     }
+
+    public function send_otp_email($email, $otp) {
+    $subject = 'Your OTP Code - ' . SMTP_FROM_NAME;
+
+    $body = '
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body style="font-family: Arial, sans-serif; background:#f4f4f4; padding:20px;">
+        <div style="max-width:600px; margin:auto; background:#ffffff; padding:30px; border-radius:10px; text-align:center;">
+            
+            <h2 style="color:#007bff;">Password Reset OTP</h2>
+            
+            <p style="font-size:16px; color:#333;">
+                Use the OTP below to reset your password:
+            </p>
+
+            <div style="margin:30px 0;">
+                <span style="font-size:32px; letter-spacing:5px; font-weight:bold; color:#000;">
+                    ' . $otp . '
+                </span>
+            </div>
+
+            <p style="color:#666;">
+                This OTP is valid for <strong>5 minutes</strong>.
+            </p>
+
+            <p style="color:#999; font-size:12px; margin-top:20px;">
+                If you didn’t request this, ignore this email.
+            </p>
+
+        </div>
+    </body>
+    </html>
+    ';
+
+    return $this->send($email, $subject, $body, true);
+}
 }
