@@ -10,7 +10,7 @@ class Feedback extends CI_Controller {
         $this->load->helper('response');
     }
 
-    // ----------------- PUBLIC: SUBMIT -----------------
+ 
     public function submit() {
         $input = json_decode(file_get_contents("php://input"), true);
 
@@ -29,7 +29,7 @@ class Feedback extends CI_Controller {
             'place' => $input['place'] ?? null,
             'message' => $input['message'],
             'rating' => intval($input['rating']),
-            'createdby' => 1 // ✅ always 1
+            'createdby' => 1 
         ];
 
         $this->Feedback_model->insert($data);
@@ -37,7 +37,7 @@ class Feedback extends CI_Controller {
         return success_response("Feedback submitted successfully");
     }
 
-    // ----------------- ADMIN: VIEW -----------------
+
     public function get_all() {
         $user = $this->Jwt_model->verify_token();
 
@@ -49,7 +49,7 @@ class Feedback extends CI_Controller {
         return success_response("Feedbacks fetched", $data);
     }
 
-    // ----------------- ADMIN: UPDATE -----------------
+  
     public function update($id) {
         $user = $this->Jwt_model->verify_token();
 
@@ -73,7 +73,7 @@ class Feedback extends CI_Controller {
         return success_response("Feedback updated");
     }
 
-    // ----------------- ADMIN: TOGGLE -----------------
+  
     public function toggle_status($id) {
         $user = $this->Jwt_model->verify_token();
 
@@ -96,7 +96,7 @@ class Feedback extends CI_Controller {
         ]);
     }
 
-    // ----------------- PUBLIC: SHOW ENABLED -----------------
+   
     public function get_enabled() {
         $data = $this->Feedback_model->get_enabled();
         return success_response("Feedbacks fetched", $data);

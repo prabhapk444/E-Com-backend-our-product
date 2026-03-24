@@ -244,18 +244,18 @@ public function google_login() {
     $user = $this->User_model->get_by_email($input['email']);
     if (!$user) return not_found("User not found");
 
-    // Generate OTP
+
     $otp = rand(100000, 999999);
     $expires = date('Y-m-d H:i:s', strtotime('+5 minutes'));
 
-    // Save OTP
+
     $this->User_model->save_reset_token([
         'user_id' => $user->id,
-        'token' => $otp, // use token column as OTP
+        'token' => $otp,
         'expires_at' => $expires
     ]);
 
-    // Send OTP email
+  
     $this->email_library->send_otp_email($user->email, $otp);
 
     return success_response("OTP sent to email");
@@ -303,7 +303,7 @@ public function get_admins() {
     if (!$user || intval($user->role) !== 1) return unauthorized("Access denied");
 
     $admins = $this->db->where('role', 2)->get('users')->result();
-    return success_response("Admins fetched", $admins); // <-- send array directly
+    return success_response("Admins fetched", $admins); 
 }
 
 // Create or update admin
@@ -314,7 +314,7 @@ public function save_admin() {
     $input = json_decode(file_get_contents("php://input"), true);
 
     if (isset($input['id']) && !empty($input['id'])) {
-        // Update existing admin
+     
         $data = [
             'name' => $input['name'],
             'email' => $input['email'],
@@ -328,7 +328,7 @@ public function save_admin() {
         $this->db->where('id', $input['id'])->update('users', $data);
         return success_response("Admin updated");
     } else {
-        // Create new admin
+  
         $data = [
             'name' => $input['name'],
             'email' => $input['email'],
@@ -342,7 +342,7 @@ public function save_admin() {
     }
 }
 
-// controllers/Auth.php
+
 public function toggle_admin_status($id)
 {
     $this->load->model('User_model');
@@ -353,8 +353,8 @@ public function toggle_admin_status($id)
         return;
     }
 
-    // Use correct column name
-    $currentStatus = $admin->is_enabled; // lowercase, match your DB
+  
+    $currentStatus = $admin->is_enabled; 
     $newStatus = $currentStatus ? 0 : 1;
 
     $updated = $this->User_model->update_status($id, $newStatus);
@@ -394,7 +394,7 @@ public function toggle_user_status($id)
 {
     $user = $this->Jwt_model->verify_token();
 
-    // Allow admin + super admin
+
     if (!$user || !in_array(intval($user->role), [1, 2])) {
         return unauthorized("Access denied");
     }
