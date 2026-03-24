@@ -394,7 +394,7 @@ public function toggle_user_status($id)
 {
     $user = $this->Jwt_model->verify_token();
 
-
+    // Allow admin + super admin
     if (!$user || !in_array(intval($user->role), [1, 2])) {
         return unauthorized("Access denied");
     }
