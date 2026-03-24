@@ -10,6 +10,13 @@ class Feedback extends CI_Controller {
         $this->load->helper('response');
     }
 
+    private function check_role($allowed_roles = []) {
+    $user = $this->Jwt_model->verify_token();
+    if (!$user) return null; 
+    if (!in_array(intval($user->role), $allowed_roles)) return false;
+    return $user;
+}
+
  
     public function submit() {
         $input = json_decode(file_get_contents("php://input"), true);
@@ -101,4 +108,22 @@ class Feedback extends CI_Controller {
         $data = $this->Feedback_model->get_enabled();
         return success_response("Feedbacks fetched", $data);
     }
+
+    public function delete($id) {
+    $user = $this->Jwt_model->verify_token();
+
+    if (!$user || intval($user->role) !== 2) {
+        return unauthorized("Access denied");
+    }
+
+    $feedback = $this->Feedback_model->get_by_id($id);
+
+    if (!$feedback) {
+        return error_response("Feedback not found");
+    }
+
+    $this->Feedback_model->delete($id);
+
+    return success_response("Feedback deleted successfully");
+}
 }

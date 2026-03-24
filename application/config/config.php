@@ -25,6 +25,9 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 */
 $config['base_url'] =(ENVIRONMENT !== 'production')?'http://localhost/E-com':'';
 
+
+$config['upload_path'] = './uploads/';
+
 /*
 |--------------------------------------------------------------------------
 | Index File

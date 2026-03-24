@@ -82,3 +82,47 @@ $route['api/feedbacks'] = 'feedback/get_all';
 $route['api/feedback/update/(:num)'] = 'feedback/update/$1';
 $route['api/feedback/toggle/(:num)'] = 'feedback/toggle_status/$1';
 $route['api/feedback/enabled'] = 'feedback/get_enabled';
+$route['feedback/delete/(:num)'] = 'feedback/delete/$1';
+
+
+
+
+$route['category/get_all'] = 'category/get_all';
+$route['category/create'] = 'category/create';
+$route['category/update/(:num)'] = 'category/update/$1';
+$route['category/delete/(:num)'] = 'category/delete/$1';
+$route['category/toggle_status/(:num)'] = 'category/toggle_status/$1';
+
+
+$route['subcategories'] = 'subcategory/index';
+$route['subcategories'] = 'subcategory/get_all';
+$route['subcategories/(:num)'] = 'subcategory/view/$1';
+$route['subcategories/create'] = 'subcategory/create';
+$route['subcategories/update/(:num)'] = 'subcategory/update/$1';
+$route['subcategories/delete/(:num)'] = 'subcategory/delete/$1';
+$route['subcategories/toggle/(:num)'] = 'subcategory/toggle/$1';
+
+
+
+
+
+// Public endpoints (no auth required)
+$route['products'] = 'products/index';
+$route['products/index'] = 'products/index';
+$route['products/get/(:num)'] = 'products/get/$1';
+$route['products/view/(:any)'] = 'products/view/$1';
+$route['products/featured'] = 'products/featured';
+
+// Admin endpoints (auth required)
+$route['products/admin'] = 'products/get_all_admin';
+$route['products/create'] = 'products/create';
+$route['products/update/(:num)'] = 'products/update/$1';
+$route['products/delete/(:num)'] = 'products/delete/$1';
+$route['products/toggle/(:num)'] = 'products/toggle_status/$1';
+$route['products/admin/get/(:num)'] = 'products/get_admin/$1';
+
+
+// Variant endpoints - Role 2 required
+$route['products/variant/create'] = 'products/create_variant';
+$route['products/variant/update/(:num)'] = 'products/update_variant/$1';
+$route['products/variant/delete/(:num)'] = 'products/delete_variant/$1';
