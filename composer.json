@@ -13,7 +13,8 @@
 	"require": {
 		"php": ">=5.3.7",
 		"firebase/php-jwt": "*",
-		"phpmailer/phpmailer": "*"
+		"phpmailer/phpmailer": "*",
+		"google/apiclient": "^2.0"
 	},
 	"suggest": {
 		"paragonie/random_compat": "Provides better randomness in PHP 5.x"
