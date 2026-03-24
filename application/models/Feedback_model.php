@@ -45,4 +45,8 @@ class Feedback_model extends CI_Model {
         return $this->db->where('id', $id)
             ->update($this->table, ['is_enabled' => $status]);
     }
+
+    public function delete($id) {
+    return $this->db->where('id', $id)->delete($this->table);
+   }
 }
