@@ -6,6 +6,8 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 // define('RESEND_API_KEY', 're_iKPS2CqY_GnN4jaiac2BP6QHdxWsnbL9o');
 
 
+defined('GOOGLE_CREDENTIALS_PATH') or define('GOOGLE_CREDENTIALS_PATH', FCPATH . 'goauth_credentials.json');
+
 defined('SMTP_HOST')      or define('SMTP_HOST', (ENVIRONMENT !== 'production')? 'smtp.gmail.com' : 'smtp.gmail.com');
 defined('SMTP_PORT')      or define('SMTP_PORT', (ENVIRONMENT !== 'production')? 587 : 465);
 defined('SMTP_USER')      or define('SMTP_USER', (ENVIRONMENT !== 'production')? 'karanprabha22668@gmail.com':'karanprabha22668@mail.com');

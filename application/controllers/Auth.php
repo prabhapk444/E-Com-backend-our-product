@@ -7,9 +7,10 @@ class Auth extends CI_Controller {
         parent::__construct();
         $this->load->model('User_model');
         $this->load->model('Jwt_model');
+        $this->load->model('Google_oauth');
         $this->load->library('email_library');
         $this->load->helper('response');
-         $this->load->helper('url');
+        $this->load->helper('url');
     }
 
     // REGISTER
@@ -153,88 +154,94 @@ class Auth extends CI_Controller {
 }
 
 public function google_register() {
-    $input = json_decode(file_get_contents("php://input"), true);
-    $token = $input['token'] ?? null;
+    // Read token from Authorization: Bearer header
+    $headers = $this->input->request_headers();
+    $auth_header = $headers['Authorization'] ?? null;
+    if (!$auth_header || !preg_match('/Bearer\s(\S+)/', $auth_header, $matches)) {
+        return error_response("Token missing");
+    }
+    $token = $matches[1];
 
-    if (!$token) return error_response("Token missing");
-
-    // Verify token with Google
-    $url = "https://oauth2.googleapis.com/tokeninfo?id_token=" . $token;
-    $response = file_get_contents($url);
-    $payload = json_decode($response);
-
-    if (!$payload || !isset($payload->email)) {
+    // Verify using google/apiclient
+    $payload = $this->Google_oauth->verify($token);
+    if (!$payload || !isset($payload['email'])) {
         return unauthorized("Invalid Google token");
     }
 
-    $email = $payload->email;
-    $name = $payload->name ?? explode('@', $email)[0];
+    $email = $payload['email'];
+    $name = $payload['name'] ?? explode('@', $email)[0];
 
     $user = $this->User_model->get_by_email($email);
     if ($user) return conflict("User already exists");
 
     $data = [
-        'name' => $name,
-        'email' => $email,
-        'password' => password_hash(bin2hex(random_bytes(8)), PASSWORD_BCRYPT), 
-        'role' => 3
+        'name'      => $name,
+        'email'     => $email,
+        'password'  => password_hash(bin2hex(random_bytes(8)), PASSWORD_BCRYPT),
+        'google_id' => $payload['sub'],
+        'role'      => 3
     ];
     $this->User_model->register($data);
     $user = $this->User_model->get_by_email($email);
 
     $jwt = $this->Jwt_model->encode([
-        'uid' => $user->id,
+        'uid'   => $user->id,
         'email' => $user->email,
-        'role' => $user->role
+        'role'  => intval($user->role)
     ]);
 
     return success_response("Google registration success", [
         'token' => $jwt,
-        'user' => $user
+        'user'  => $user
     ]);
 }
 
 public function google_login() {
-    $input = json_decode(file_get_contents("php://input"), true);
-    $token = $input['token'] ?? null;
+    // Read token from Authorization: Bearer header (like Lifeboat)
+    $headers = $this->input->request_headers();
+    $auth_header = $headers['Authorization'] ?? null;
+    if (!$auth_header || !preg_match('/Bearer\s(\S+)/', $auth_header, $matches)) {
+        return error_response("Token missing");
+    }
+    $token = $matches[1];
 
-    if (!$token) return error_response("Token missing");
-
-    // Verify token with Google
-    $url = "https://oauth2.googleapis.com/tokeninfo?id_token=" . $token;
-    $response = file_get_contents($url);
-    $payload = json_decode($response);
-
-    if (!$payload || !isset($payload->email)) {
+    // Verify using google/apiclient (proper audience validation)
+    $payload = $this->Google_oauth->verify($token);
+    if (!$payload || !isset($payload['email'])) {
         return unauthorized("Invalid Google token");
     }
 
-    $email = $payload->email;
-    $name = $payload->name ?? explode('@', $email)[0];
+    $email = $payload['email'];
+    $name = $payload['name'] ?? explode('@', $email)[0];
 
     $user = $this->User_model->get_by_email($email);
 
     if (!$user) {
-        // Register user automatically
         $data = [
-            'name' => $name,
-            'email' => $email,
-            'password' => password_hash(bin2hex(random_bytes(8)), PASSWORD_BCRYPT), 
-            'role' => 3
+            'name'      => $name,
+            'email'     => $email,
+            'password'  => password_hash(bin2hex(random_bytes(8)), PASSWORD_BCRYPT),
+            'google_id' => $payload['sub'],
+            'role'      => 3
         ];
         $this->User_model->register($data);
         $user = $this->User_model->get_by_email($email);
+        $this->email_library->send_welcome_email($email, $name);
+    } else {
+        if (intval($user->is_enabled) !== 1) {
+            return unauthorized("Your account is disabled. Contact admin.");
+        }
     }
 
     $jwt = $this->Jwt_model->encode([
-        'uid' => $user->id,
+        'uid'   => $user->id,
         'email' => $user->email,
-        'role' => $user->role
+        'role'  => intval($user->role)
     ]);
 
     return success_response("Google login success", [
         'token' => $jwt,
-        'user' => $user
+        'user'  => $user
     ]);
 }
 
