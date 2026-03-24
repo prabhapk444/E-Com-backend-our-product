@@ -55,8 +55,9 @@ if (!function_exists('send_error')) {
 
 
 function bad_request($msg) {
-    echo json_encode(['status' => false, 'message' => $msg]);
+    header('Content-Type: application/json');
     http_response_code(400);
+    echo json_encode(['status' => false, 'message' => $msg]);
     exit;
 }
 function unauthorized($msg) {

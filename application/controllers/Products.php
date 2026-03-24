@@ -61,20 +61,6 @@ class Products extends CI_Controller {
         return ['valid' => true, 'user' => $user];
     }
 
-    private function generate_slug($name, $exclude_id = null) {
-        $slug = strtolower(trim(preg_replace('/[^a-zA-Z0-9-]+/', '-', $name)));
-        
-        $original_slug = $slug;
-        $counter = 1;
-        
-        while ($this->product_model->slug_exists($slug, $exclude_id)) {
-            $slug = $original_slug . '-' . $counter;
-            $counter++;
-        }
-        
-        return $slug;
-    }
-
     // Upload single image
     private function upload_image($field_name, $subfolder = '') {
         $upload_path = $this->upload_path . $subfolder;
@@ -94,7 +80,7 @@ class Products extends CI_Controller {
         if (isset($_FILES[$field_name]) && $_FILES[$field_name]['error'] === UPLOAD_ERR_OK) {
             if ($this->upload->do_upload($field_name)) {
                 $data = $this->upload->data();
-                return $subfolder . $data['file_name'];
+                return 'uploads/products/' . $data['file_name'];
             } else {
                 log_message('error', 'Upload Error: ' . $this->upload->display_errors());
                 return null;
@@ -136,7 +122,7 @@ class Products extends CI_Controller {
 
                     if ($this->upload->do_upload('temp_file')) {
                         $data = $this->upload->data();
-                        $uploaded_files[] = $subfolder . $data['file_name'];
+                        $uploaded_files[] = 'uploads/products/' . $data['file_name'];
                     }
                 }
             }
@@ -166,12 +152,12 @@ class Products extends CI_Controller {
             
             // Convert image paths to full URLs
             if (!empty($product['image'])) {
-                $product['image'] = base_url($this->upload_path . $product['image']);
+                $product['image'] = base_url($product['image']);
             }
             if (!empty($product['images'])) {
                 $images = json_decode($product['images'], true) ?: [];
                 $product['images'] = array_map(function($img) {
-                    return base_url($this->upload_path . $img);
+                    return base_url($img);
                 }, $images);
             }
         }
@@ -203,19 +189,19 @@ class Products extends CI_Controller {
         
         // Convert image paths to full URLs
         if (!empty($product['image'])) {
-            $product['image'] = base_url($this->upload_path . $product['image']);
+            $product['image'] = base_url($product['image']);
         }
         if (!empty($product['images'])) {
             $images = json_decode($product['images'], true) ?: [];
             $product['images'] = array_map(function($img) {
-                return base_url($this->upload_path . $img);
+                return base_url($img);
             }, $images);
         }
         
         // Convert variant images
         foreach ($product['variants'] as &$variant) {
             if (!empty($variant['image'])) {
-                $variant['image'] = base_url($this->upload_path . $variant['image']);
+                $variant['image'] = base_url($variant['image']);
             }
         }
 
@@ -236,34 +222,15 @@ class Products extends CI_Controller {
         
         // Convert image paths to full URLs
         if (!empty($product['image'])) {
-            $product['image'] = base_url($this->upload_path . $product['image']);
+            $product['image'] = base_url($product['image']);
         }
 
         success_response('Product fetched successfully', $product);
     }
 
-    public function featured() {
-        $limit = (int)$this->input->get('limit') ?: 10;
-        
-        $products = $this->product_model->get_featured($limit);
-        
-        foreach ($products as &$product) {
-            $product['variants'] = $this->product_model->get_variants($product['id']);
-            $product['categoryId'] = $product['category_id'];
-            $product['subcategoryId'] = $product['subcategory_id'];
-            
-            if (!empty($product['image'])) {
-                $product['image'] = base_url($this->upload_path . $product['image']);
-            }
-        }
+  
 
-        success_response('Featured products fetched successfully', $products);
-    }
-
-    // ============================================
-    // ADMIN METHODS
-    // ============================================
-
+  
     public function get_all_admin() {
         $user = $this->get_current_user();
         if (!$user) {
@@ -288,19 +255,19 @@ class Products extends CI_Controller {
             
             // Convert image paths to full URLs for admin
             if (!empty($product['image'])) {
-                $product['image'] = base_url($this->upload_path . $product['image']);
+                $product['image'] = base_url($product['image']);
             }
             if (!empty($product['images'])) {
                 $images = json_decode($product['images'], true) ?: [];
                 $product['images'] = array_map(function($img) {
-                    return base_url($this->upload_path . $img);
+                    return base_url($img);
                 }, $images);
             }
             
             // Convert variant images
             foreach ($product['variants'] as &$variant) {
                 if (!empty($variant['image'])) {
-                    $variant['image'] = base_url($this->upload_path . $variant['image']);
+                    $variant['image'] = base_url($variant['image']);
                 }
             }
         }
@@ -339,18 +306,18 @@ class Products extends CI_Controller {
         
         // Convert image paths to full URLs
         if (!empty($product['image'])) {
-            $product['image'] = base_url($this->upload_path . $product['image']);
+            $product['image'] = base_url($product['image']);
         }
         if (!empty($product['images'])) {
             $images = json_decode($product['images'], true) ?: [];
             $product['images'] = array_map(function($img) {
-                return base_url($this->upload_path . $img);
+                return base_url($img);
             }, $images);
         }
         
         foreach ($product['variants'] as &$variant) {
             if (!empty($variant['image'])) {
-                $variant['image'] = base_url($this->upload_path . $variant['image']);
+                $variant['image'] = base_url($variant['image']);
             }
         }
 
@@ -371,44 +338,41 @@ class Products extends CI_Controller {
         $user = $permission['user'];
         $user_id = isset($user->id) ? $user->id : (isset($user->user_id) ? $user->user_id : null);
 
-        // Handle JSON input
-        $json_data = json_decode(file_get_contents('php://input'), true);
-        
-        $data = !empty($json_data) ? $json_data : $_POST;
+       $json_input = file_get_contents('php://input');
+$json_data = json_decode($json_input, true);
 
-        if (empty($data['name'])) {
-            bad_request('Product name is required');
-            return;
-        }
+$data = $json_data;
 
-        $slug = !empty($data['slug']) ? $data['slug'] : $this->generate_slug($data['name']);
 
-        // Handle main product image upload
+if (empty($data)) {
+    $data = $_POST;
+}
+
+if (empty($data) || (!isset($data['name']) && isset($_POST['data']))) {
+    $data = json_decode($_POST['data'], true) ?? [];
+}
+    
+
         $image_filename = null;
+        
+        // Handle image upload - only file upload is supported
         if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
             $image_filename = $this->upload_image('image', 'products/');
         }
 
         // Handle multiple product images
-        $images_filenames = [];
-        if (isset($_FILES['images'])) {
-            $images_filenames = $this->upload_images('images', 'products/gallery/');
-        }
-
+      
         $product_data = [
             'name' => $data['name'],
-            'slug' => $slug,
             'description' => $data['description'] ?? '',
-            'short_description' => $data['shortDescription'] ?? $data['short_description'] ?? '',
             'category_id' => $data['categoryId'] ?? $data['category_id'] ?? null,
             'subcategory_id' => $data['subcategoryId'] ?? $data['subcategory_id'] ?? null,
-            'image' => $image_filename ?? $data['image'] ?? '',
-            'images' => !empty($images_filenames) ? json_encode($images_filenames) : (isset($data['images']) ? $data['images'] : ''),
-            'featured' => isset($data['featured']) ? (int)$data['featured'] : 0,
+            'image' => $image_filename ?? '',
+            'price' => $data['price'] ?? '',
+            'quantity' => $data['quantity'] ?? '',
             'gst' => $data['gst'] ?? '',
             'weight' => $data['weight'] ?? '',
             'hsn_code' => $data['hsnCode'] ?? $data['hsn_code'] ?? '',
-            'note' => $data['note'] ?? '',
             'discount' => $data['discount'] ?? '',
             'is_active' => $data['isActive'] ?? $data['is_active'] ?? '1',
             'created_by' => $user_id
@@ -426,11 +390,8 @@ class Products extends CI_Controller {
             foreach ($data['variants'] as $variant) {
                 // Handle variant image upload
                 $variant_image = null;
-                if (isset($variant['image_file']) && !empty($variant['image_file'])) {
-                    // Base64 image - save to file
-                    $variant_image = $this->save_base64_image($variant['image_file'], 'products/variants/');
-                } elseif (isset($variant['image']) && strpos($variant['image'], 'uploads/') === false) {
-                    // Existing image path or URL
+                if (isset($variant['image']) && !empty($variant['image']) && strpos($variant['image'], 'uploads/') === 0) {
+                    // Existing image path
                     $variant_image = $variant['image'];
                 }
 
@@ -479,44 +440,42 @@ class Products extends CI_Controller {
             return;
         }
 
-        $json_data = json_decode(file_get_contents('php://input'), true);
-        $data = !empty($json_data) ? $json_data : $_POST;
+        $json_input = file_get_contents('php://input');
+        $json_data = json_decode($json_input, true);
+        $data = $json_data;
+        
+        // Fallback to POST if JSON is empty
+        if (empty($data)) {
+            $data = $_POST;
+        }
 
         if (!empty($data['name']) && $data['name'] !== $product['name']) {
-            $data['slug'] = $this->generate_slug($data['name'], $id);
+            // Auto-generate slug if needed
         }
 
         // Handle main product image upload
         $image_filename = $product['image'];
         if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
             // Delete old image
-            if (!empty($product['image']) && file_exists($this->upload_path . $product['image'])) {
-                unlink($this->upload_path . $product['image']);
+            if (!empty($product['image']) && file_exists($product['image'])) {
+                unlink($product['image']);
             }
             $image_filename = $this->upload_image('image', 'products/');
         }
 
-        // Handle multiple product images
-        $images_filenames = json_decode($product['images'], true) ?: [];
-        if (isset($_FILES['images'])) {
-            $new_images = $this->upload_images('images', 'products/gallery/');
-            $images_filenames = array_merge($images_filenames, $new_images);
-        }
+   
 
         $product_data = [
             'name' => $data['name'] ?? $product['name'],
-            'slug' => $data['slug'] ?? $product['slug'],
             'description' => $data['description'] ?? $product['description'],
-            'short_description' => $data['shortDescription'] ?? $data['short_description'] ?? $product['short_description'],
             'category_id' => $data['categoryId'] ?? $data['category_id'] ?? $product['category_id'],
             'subcategory_id' => $data['subcategoryId'] ?? $data['subcategory_id'] ?? $product['subcategory_id'],
             'image' => $image_filename,
-            'images' => !empty($images_filenames) ? json_encode($images_filenames) : $product['images'],
-            'featured' => isset($data['featured']) ? (int)$data['featured'] : (int)$product['featured'],
+            'price' => $data['price'] ?? $product['price'],
+            'quantity' => $data['quantity'] ?? $product['quantity'],
             'gst' => $data['gst'] ?? $product['gst'],
             'weight' => $data['weight'] ?? $product['weight'],
             'hsn_code' => $data['hsnCode'] ?? $data['hsn_code'] ?? $product['hsn_code'],
-            'note' => $data['note'] ?? $product['note'],
             'discount' => $data['discount'] ?? $product['discount'],
             'is_active' => $data['isActive'] ?? $data['is_active'] ?? $product['is_active'],
             'updated_by' => $user_id
@@ -533,17 +492,16 @@ class Products extends CI_Controller {
             // Delete existing variants
             $old_variants = $this->product_model->get_variants($id);
             foreach ($old_variants as $ov) {
-                if (!empty($ov['image']) && file_exists($this->upload_path . $ov['image'])) {
-                    unlink($this->upload_path . $ov['image']);
+                if (!empty($ov['image']) && file_exists($ov['image'])) {
+                    unlink($ov['image']);
                 }
             }
             $this->product_model->delete_all_variants($id);
             
             foreach ($data['variants'] as $variant) {
                 $variant_image = null;
-                if (isset($variant['image_file']) && !empty($variant['image_file'])) {
-                    $variant_image = $this->save_base64_image($variant['image_file'], 'products/variants/');
-                } elseif (isset($variant['image']) && strpos($variant['image'], 'uploads/') === false) {
+                if (isset($variant['image']) && !empty($variant['image']) && strpos($variant['image'], 'uploads/') === 0) {
+                    // Existing image path
                     $variant_image = $variant['image'];
                 }
 
@@ -591,15 +549,15 @@ class Products extends CI_Controller {
         }
 
         // Delete product images
-        if (!empty($product['image']) && file_exists($this->upload_path . $product['image'])) {
-            unlink($this->upload_path . $product['image']);
+        if (!empty($product['image']) && file_exists($product['image'])) {
+            unlink($product['image']);
         }
         
         if (!empty($product['images'])) {
             $images = json_decode($product['images'], true) ?: [];
             foreach ($images as $img) {
-                if (file_exists($this->upload_path . $img)) {
-                    unlink($this->upload_path . $img);
+                if (file_exists($img)) {
+                    unlink($img);
                 }
             }
         }
@@ -607,8 +565,8 @@ class Products extends CI_Controller {
         // Delete variant images
         $variants = $this->product_model->get_variants($id);
         foreach ($variants as $variant) {
-            if (!empty($variant['image']) && file_exists($this->upload_path . $variant['image'])) {
-                unlink($this->upload_path . $variant['image']);
+            if (!empty($variant['image']) && file_exists($variant['image'])) {
+                unlink($variant['image']);
             }
         }
 
@@ -643,46 +601,4 @@ class Products extends CI_Controller {
         success_response('Product status updated successfully', $result);
     }
 
-    // Save base64 image to file
-    private function save_base64_image($base64_string, $subfolder = '') {
-        if (empty($base64_string)) {
-            return null;
-        }
-
-        $upload_path = $this->upload_path . $subfolder;
-        
-        if (!is_dir($upload_path)) {
-            mkdir($upload_path, 0777, true);
-        }
-
-        // Remove data URL prefix if present
-        if (strpos($base64_string, 'data:image/') === 0) {
-            $base64_string = substr($base64_string, strpos($base64_string, ',') + 1);
-        }
-
-        $image_data = base64_decode($base64_string);
-        
-        // Get image extension
-        $finfo = finfo_open();
-        $mime_type = finfo_buffer($finfo, $image_data, FILEINFO_MIME_TYPE);
-        finfo_close($finfo);
-
-        $extension = 'jpg';
-        if (strpos($mime_type, 'png') !== false) {
-            $extension = 'png';
-        } elseif (strpos($mime_type, 'gif') !== false) {
-            $extension = 'gif';
-        } elseif (strpos($mime_type, 'webp') !== false) {
-            $extension = 'webp';
-        }
-
-        $filename = uniqid() . '.' . $extension;
-        $filepath = $upload_path . $filename;
-
-        if (file_put_contents($filepath, $image_data)) {
-            return $subfolder . $filename;
-        }
-
-        return null;
-    }
 }

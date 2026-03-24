@@ -28,6 +28,9 @@ $config['base_url'] = (ENVIRONMENT !== 'production') ? 'http://localhost/e-com/'
 
 $config['upload_path'] = './uploads/';
 
+
+$config['upload_path'] = './uploads/';
+
 /*
 |--------------------------------------------------------------------------
 | Index File
