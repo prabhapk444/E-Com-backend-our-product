@@ -182,6 +182,32 @@ private function upload_image($field_name, $folder = '')
   
 
   
+    // Get featured products
+    public function featured() {
+        $limit = (int)$this->input->get('limit') ?: 10;
+        
+        $products = $this->product_model->get_featured($limit);
+        
+        foreach ($products as &$product) {
+            $product['variants'] = $this->product_model->get_variants($product['id']);
+            $product['categoryId'] = $product['category_id'];
+            $product['subcategoryId'] = $product['subcategory_id'];
+            
+            // Convert image paths to full URLs
+            if (!empty($product['image'])) {
+                $product['image'] = base_url($product['image']);
+            }
+            if (!empty($product['images'])) {
+                $images = json_decode($product['images'], true) ?: [];
+                $product['images'] = array_map(function($img) {
+                    return base_url($img);
+                }, $images);
+            }
+        }
+
+        success_response('Featured products fetched successfully', ['products' => $products]);
+    }
+
     public function get_all_admin() {
         $user = $this->get_current_user();
         if (!$user) {
