@@ -201,6 +201,7 @@ public function google_login() {
     $headers = $this->input->request_headers();
     $auth_header = $headers['Authorization'] ?? null;
     if (!$auth_header || !preg_match('/Bearer\s(\S+)/', $auth_header, $matches)) {
+        log_message('error', '[GAuth] google_login: Authorization header missing or malformed');
         return error_response("Token missing");
     }
     $token = $matches[1];
@@ -208,15 +209,19 @@ public function google_login() {
     // Verify using google/apiclient (proper audience validation)
     $payload = $this->Google_oauth->verify($token);
     if (!$payload || !isset($payload['email'])) {
+        log_message('error', '[GAuth] google_login: Token verification returned no payload');
         return unauthorized("Invalid Google token");
     }
 
     $email = $payload['email'];
     $name = $payload['name'] ?? explode('@', $email)[0];
 
+    log_message('info', '[GAuth] google_login: Token verified for email=' . $email);
+
     $user = $this->User_model->get_by_email($email);
 
     if (!$user) {
+        log_message('info', '[GAuth] google_login: New user, registering email=' . $email);
         $data = [
             'name'      => $name,
             'email'     => $email,
@@ -229,8 +234,10 @@ public function google_login() {
         $this->email_library->send_welcome_email($email, $name);
     } else {
         if (intval($user->is_enabled) !== 1) {
+            log_message('error', '[GAuth] google_login: Account disabled for email=' . $email);
             return unauthorized("Your account is disabled. Contact admin.");
         }
+        log_message('info', '[GAuth] google_login: Existing user login email=' . $email);
     }
 
     $jwt = $this->Jwt_model->encode([
