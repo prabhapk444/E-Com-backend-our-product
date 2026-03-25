@@ -78,7 +78,7 @@ $db['default'] = array(
 	'hostname' => 'localhost',
 	'username' => (ENVIRONMENT !== 'production')?'root':'',
 	'password' => (ENVIRONMENT !== 'production')?'':'',
-	'database' => (ENVIRONMENT !== 'production')?'E-com':'cfgecs',
+	'database' => (ENVIRONMENT !== 'production')?'e-com':'cfgecs',
 	'dbdriver' => 'mysqli',
 	'dbprefix' => '',
 	'pconnect' => FALSE,
