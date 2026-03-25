@@ -18,6 +18,11 @@ class Google_oauth extends CI_Model {
     }
 
     public function verify($token) {
-        return $this->client->verifyIdToken($token);
+        try {
+            return $this->client->verifyIdToken($token);
+        } catch (\Exception $e) {
+            log_message('error', '[GAuth] Token verification failed: ' . $e->getMessage());
+            return null;
+        }
     }
 }
