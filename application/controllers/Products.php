@@ -61,75 +61,26 @@ class Products extends CI_Controller {
         return ['valid' => true, 'user' => $user];
     }
 
-    // Upload single image
-    private function upload_image($field_name, $subfolder = '') {
-        $upload_path = $this->upload_path . $subfolder;
-        
-        if (!is_dir($upload_path)) {
-            mkdir($upload_path, 0777, true);
-        }
+  
+private function upload_image($field_name, $folder = '')
+{
+    if (!isset($_FILES[$field_name])) return null;
 
-        $config['upload_path'] = $upload_path;
-        $config['allowed_types'] = implode('|', $this->allowed_types);
-        $config['max_size'] = 2048; // 2MB
-        $config['encrypt_name'] = TRUE;
-        $config['remove_spaces'] = TRUE;
+    $upload_path = FCPATH . $this->upload_path . $folder;
 
-        $this->load->library('upload', $config);
-
-        if (isset($_FILES[$field_name]) && $_FILES[$field_name]['error'] === UPLOAD_ERR_OK) {
-            if ($this->upload->do_upload($field_name)) {
-                $data = $this->upload->data();
-                return 'uploads/products/' . $data['file_name'];
-            } else {
-                log_message('error', 'Upload Error: ' . $this->upload->display_errors());
-                return null;
-            }
-        }
-        
-        return null;
+    if (!is_dir($upload_path)) {
+        mkdir($upload_path, 0777, true);
     }
 
-    // Upload multiple images
-    private function upload_images($field_name, $subfolder = '') {
-        $upload_path = $this->upload_path . $subfolder;
-        
-        if (!is_dir($upload_path)) {
-            mkdir($upload_path, 0777, true);
-        }
+    $file_name = time() . '_' . basename($_FILES[$field_name]['name']);
+    $target = $upload_path . $file_name;
 
-        $config['upload_path'] = $upload_path;
-        $config['allowed_types'] = implode('|', $this->allowed_types);
-        $config['max_size'] = 2048;
-        $config['encrypt_name'] = TRUE;
-        $config['remove_spaces'] = TRUE;
-
-        $this->load->library('upload', $config);
-
-        $uploaded_files = [];
-        
-        if (isset($_FILES[$field_name])) {
-            $files = $_FILES[$field_name];
-            $file_count = count($files['name']);
-            
-            for ($i = 0; $i < $file_count; $i++) {
-                if ($files['error'][$i] === UPLOAD_ERR_OK) {
-                    $_FILES['temp_file']['name'] = $files['name'][$i];
-                    $_FILES['temp_file']['type'] = $files['type'][$i];
-                    $_FILES['temp_file']['tmp_name'] = $files['tmp_name'][$i];
-                    $_FILES['temp_file']['error'] = $files['error'][$i];
-                    $_FILES['temp_file']['size'] = $files['size'][$i];
-
-                    if ($this->upload->do_upload('temp_file')) {
-                        $data = $this->upload->data();
-                        $uploaded_files[] = 'uploads/products/' . $data['file_name'];
-                    }
-                }
-            }
-        }
-        
-        return $uploaded_files;
+    if (move_uploaded_file($_FILES[$field_name]['tmp_name'], $target)) {
+        return $this->upload_path . $file_name;
     }
+
+    return null;
+}
 
     // ============================================
     // PUBLIC METHODS
@@ -302,7 +253,6 @@ class Products extends CI_Controller {
         $product['variants'] = $this->product_model->get_variants($id);
         $product['categoryId'] = $product['category_id'];
         $product['subcategoryId'] = $product['subcategory_id'];
-        $product['shortDescription'] = $product['short_description'] ?? '';
         
         // Convert image paths to full URLs
         if (!empty($product['image'])) {
@@ -357,7 +307,7 @@ if (empty($data) || (!isset($data['name']) && isset($_POST['data']))) {
         
         // Handle image upload - only file upload is supported
         if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
-            $image_filename = $this->upload_image('image', 'products/');
+            $image_filename = $this->upload_image('image', '');
         }
 
         // Handle multiple product images
@@ -387,21 +337,22 @@ if (empty($data) || (!isset($data['name']) && isset($_POST['data']))) {
 
         // Handle variants
         if (!empty($data['variants']) && is_array($data['variants'])) {
-            foreach ($data['variants'] as $variant) {
+           foreach ($data['variants'] as $index => $variant) {
                 // Handle variant image upload
-                $variant_image = null;
-                if (isset($variant['image']) && !empty($variant['image']) && strpos($variant['image'], 'uploads/') === 0) {
-                    // Existing image path
-                    $variant_image = $variant['image'];
-                }
+              $variant_image = null;
 
+
+$variant_key = 'variant_image_' . $index;
+
+if (isset($_FILES[$variant_key]) && $_FILES[$variant_key]['error'] === UPLOAD_ERR_OK) {
+    $variant_image = $this->upload_image($variant_key, '');
+}
                 $variant_data = [
                     'product_id' => $product_id,
                     'sku' => $variant['sku'] ?? null,
-                    'size' => $variant['size'] ?? ($variant['attribute'] ?? null),
-                    'color' => $variant['color'] ?? null,
+                    'Attribute' => $variant['attribute'] ?? ($variant['attribute'] ?? null),
+                    'Value' => $variant['value'] ?? null,
                     'price' => $variant['price'] ?? 0,
-                    'compare_at_price' => $variant['compareAtPrice'] ?? $variant['compare_at_price'] ?? null,
                     'discount' => $variant['discount'] ?? null,
                     'stock' => $variant['stock'] ?? 0,
                     'image' => $variant_image,
@@ -440,27 +391,33 @@ if (empty($data) || (!isset($data['name']) && isset($_POST['data']))) {
             return;
         }
 
-        $json_input = file_get_contents('php://input');
-        $json_data = json_decode($json_input, true);
-        $data = $json_data;
-        
-        // Fallback to POST if JSON is empty
-        if (empty($data)) {
-            $data = $_POST;
-        }
+$json_input = file_get_contents('php://input');
+$json_data = json_decode($json_input, true);
+
+$data = $json_data;
+
+
+if (empty($data) && isset($_POST['data'])) {
+    $data = json_decode($_POST['data'], true);
+}
+
+
+if (empty($data)) {
+    $data = $_POST;
+}
 
         if (!empty($data['name']) && $data['name'] !== $product['name']) {
-            // Auto-generate slug if needed
+           
         }
 
         // Handle main product image upload
         $image_filename = $product['image'];
         if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
             // Delete old image
-            if (!empty($product['image']) && file_exists($product['image'])) {
-                unlink($product['image']);
-            }
-            $image_filename = $this->upload_image('image', 'products/');
+           if (!empty($product['image']) && file_exists(FCPATH . $product['image'])) {
+    unlink(FCPATH . $product['image']);
+}
+            $image_filename = $this->upload_image('image', '');
         }
 
    
@@ -492,26 +449,26 @@ if (empty($data) || (!isset($data['name']) && isset($_POST['data']))) {
             // Delete existing variants
             $old_variants = $this->product_model->get_variants($id);
             foreach ($old_variants as $ov) {
-                if (!empty($ov['image']) && file_exists($ov['image'])) {
-                    unlink($ov['image']);
-                }
+               if (!empty($ov['image']) && file_exists(FCPATH . $ov['image'])) {
+    unlink(FCPATH . $ov['image']);
+}
             }
             $this->product_model->delete_all_variants($id);
             
-            foreach ($data['variants'] as $variant) {
-                $variant_image = null;
-                if (isset($variant['image']) && !empty($variant['image']) && strpos($variant['image'], 'uploads/') === 0) {
-                    // Existing image path
-                    $variant_image = $variant['image'];
-                }
+            foreach ($data['variants'] as $index => $variant) {
+               $variant_image = $variant['existing_image'] ?? null;
 
+$variant_key = 'variant_image_' . $index;
+
+if (isset($_FILES[$variant_key]) && $_FILES[$variant_key]['error'] === UPLOAD_ERR_OK) {
+    $variant_image = $this->upload_image($variant_key, '');
+}
                 $variant_data = [
                     'product_id' => $id,
                     'sku' => $variant['sku'] ?? null,
-                    'size' => $variant['size'] ?? ($variant['attribute'] ?? null),
-                    'color' => $variant['color'] ?? null,
+                  'Attribute' => $variant['attribute'] ?? ($variant['attribute'] ?? null),
+                    'Value' => $variant['value'] ?? null,
                     'price' => $variant['price'] ?? 0,
-                    'compare_at_price' => $variant['compareAtPrice'] ?? $variant['compare_at_price'] ?? null,
                     'discount' => $variant['discount'] ?? null,
                     'stock' => $variant['stock'] ?? 0,
                     'image' => $variant_image,
@@ -549,10 +506,9 @@ if (empty($data) || (!isset($data['name']) && isset($_POST['data']))) {
         }
 
         // Delete product images
-        if (!empty($product['image']) && file_exists($product['image'])) {
-            unlink($product['image']);
-        }
-        
+       if (!empty($product['image']) && file_exists(FCPATH . $product['image'])) {
+    unlink(FCPATH . $product['image']);
+}
         if (!empty($product['images'])) {
             $images = json_decode($product['images'], true) ?: [];
             foreach ($images as $img) {
