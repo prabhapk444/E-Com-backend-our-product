@@ -13,7 +13,7 @@ class Products extends CI_Controller {
 
     public function __construct() {
         parent::__construct();
-        $this->load->model('product_model')
+        $this->load->model('product_model');
         $this->load->model('jwt_model');
         $this->load->helper('response_helper');
         $this->load->database();
@@ -323,7 +323,6 @@ if (empty($data) || (!isset($data['name']) && isset($_POST['data']))) {
             'gst' => $data['gst'] ?? '',
             'weight' => $data['weight'] ?? '',
             'hsn_code' => $data['hsnCode'] ?? $data['hsn_code'] ?? '',
-            'discount' => $data['discount'] ?? '',
             'is_active' => $data['isActive'] ?? $data['is_active'] ?? '1',
             'created_by' => $user_id
         ];
@@ -353,7 +352,6 @@ if (isset($_FILES[$variant_key]) && $_FILES[$variant_key]['error'] === UPLOAD_ER
                     'Attribute' => $variant['attribute'] ?? ($variant['attribute'] ?? null),
                     'Value' => $variant['value'] ?? null,
                     'price' => $variant['price'] ?? 0,
-                    'discount' => $variant['discount'] ?? null,
                     'stock' => $variant['stock'] ?? 0,
                     'image' => $variant_image,
                     'is_active' => $variant['isActive'] ?? $variant['is_active'] ?? '1',
@@ -433,7 +431,6 @@ if (empty($data)) {
             'gst' => $data['gst'] ?? $product['gst'],
             'weight' => $data['weight'] ?? $product['weight'],
             'hsn_code' => $data['hsnCode'] ?? $data['hsn_code'] ?? $product['hsn_code'],
-            'discount' => $data['discount'] ?? $product['discount'],
             'is_active' => $data['isActive'] ?? $data['is_active'] ?? $product['is_active'],
             'updated_by' => $user_id
         ];
@@ -469,7 +466,6 @@ if (isset($_FILES[$variant_key]) && $_FILES[$variant_key]['error'] === UPLOAD_ER
                   'Attribute' => $variant['attribute'] ?? ($variant['attribute'] ?? null),
                     'Value' => $variant['value'] ?? null,
                     'price' => $variant['price'] ?? 0,
-                    'discount' => $variant['discount'] ?? null,
                     'stock' => $variant['stock'] ?? 0,
                     'image' => $variant_image,
                     'is_active' => $variant['isActive'] ?? $variant['is_active'] ?? '1',
