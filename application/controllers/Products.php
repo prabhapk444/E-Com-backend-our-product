@@ -312,9 +312,9 @@ private function upload_image($field_name, $folder = '')
         }
 
         $user = $permission['user'];
-        $user_id = isset($user->id) ? $user->id : (isset($user->user_id) ? $user->user_id : null);
+        $user_id = isset($user->id) ? $user->id : (isset($user->user_id) ? $user->user_id : (isset($user->uid) ? $user->uid : null));
 
-       $json_input = file_get_contents('php://input');
+        $json_input = file_get_contents('php://input');
 $json_data = json_decode($json_input, true);
 
 $data = $json_data;
@@ -350,6 +350,7 @@ if (empty($data) || (!isset($data['name']) && isset($_POST['data']))) {
             'weight' => $data['weight'] ?? '',
             'hsn_code' => $data['hsnCode'] ?? $data['hsn_code'] ?? '',
             'is_active' => $data['isActive'] ?? $data['is_active'] ?? '1',
+            'featured' => $data['featured'] ?? $data['is_featured'] ?? '0',
             'created_by' => $user_id
         ];
 
@@ -407,7 +408,7 @@ if (isset($_FILES[$variant_key]) && $_FILES[$variant_key]['error'] === UPLOAD_ER
         }
 
         $user = $permission['user'];
-        $user_id = isset($user->id) ? $user->id : (isset($user->user_id) ? $user->user_id : null);
+        $user_id = isset($user->id) ? $user->id : (isset($user->user_id) ? $user->user_id : (isset($user->uid) ? $user->uid : null));
 
         $product = $this->product_model->get_by_id($id);
         if (!$product) {
@@ -458,6 +459,7 @@ if (empty($data)) {
             'weight' => $data['weight'] ?? $product['weight'],
             'hsn_code' => $data['hsnCode'] ?? $data['hsn_code'] ?? $product['hsn_code'],
             'is_active' => $data['isActive'] ?? $data['is_active'] ?? $product['is_active'],
+            'featured' => isset($data['featured']) ? $data['featured'] : (isset($data['is_featured']) ? $data['is_featured'] : $product['featured']),
             'updated_by' => $user_id
         ];
 
