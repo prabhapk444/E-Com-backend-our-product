@@ -126,3 +126,47 @@ $route['products/admin/get/(:num)'] = 'products/get_admin/$1';
 $route['products/variant/create'] = 'products/create_variant';
 $route['products/variant/update/(:num)'] = 'products/update_variant/$1';
 $route['products/variant/delete/(:num)'] = 'products/delete_variant/$1';
+
+
+
+
+// Order endpoints
+// Public - Create order (no token required)
+// Supports both /orders and /api/orders for frontend compatibility
+$route['orders'] = 'orders/create';
+$route['api/orders'] = 'orders/create';
+$route['api/orders/create'] = 'orders/create';
+
+// Public - Get order by ID
+$route['api/orders/get/(:num)'] = 'orders/get/$1';
+
+// Public - Get order by order_id
+$route['api/orders/view/(:any)'] = 'orders/view/$1';
+
+// Customer - Get my orders (auth required)
+$route['api/orders/my'] = 'orders/my_orders';
+
+// Customer - Cancel order (auth required)
+$route['api/orders/cancel/(:num)'] = 'orders/cancel/$1';
+
+// Admin - Get all orders
+$route['api/admin/orders'] = 'orders/index';
+$route['api/admin/orders/index'] = 'orders/index';
+
+// Admin - Get recent orders
+$route['api/admin/orders/recent'] = 'orders/recent';
+
+// Admin - Update order status
+$route['api/admin/orders/status/(:num)'] = 'orders/update_status/$1';
+
+// Admin/Payment - Update payment status
+$route['api/admin/orders/payment/(:num)'] = 'orders/update_payment/$1';
+
+// Admin - Get orders by status
+$route['api/admin/orders/status/(:any)'] = 'orders/by_status/$1';
+
+// Admin - Get specific order by ID
+$route['api/admin/orders/(:num)'] = 'orders/get_admin/$1';
+
+// Admin - Get sales stats
+$route['api/admin/orders/stats'] = 'orders/stats';

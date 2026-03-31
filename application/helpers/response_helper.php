@@ -40,6 +40,9 @@ function error_response($message = 'Error', $code = 400) {
 
 if (!function_exists('send_error')) {
     function send_error($message = 'Error', $code = 400, $data = []) {
+        // Debug: log the error
+        log_message('info', 'send_error called: ' . $message . ' with code ' . $code);
+        
         $CI = &get_instance();
         $CI->output
             ->set_content_type('application/json')
