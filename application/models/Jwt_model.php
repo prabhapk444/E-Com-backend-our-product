@@ -29,6 +29,7 @@ class Jwt_model extends CI_Model {
     public function decode($token) {
     try {
         $decoded = JWT::decode($token, new Key($this->secret_key, $this->algorithm));
+        log_message('info', 'Jwt_model::decode() - success');
         return $decoded;
     } catch (Exception $e) {
         log_message('error', 'JWT Decode Error: ' . $e->getMessage());
@@ -56,17 +57,21 @@ class Jwt_model extends CI_Model {
 public function get_token_from_header() {
     // Try CI method
     $headers = $this->input->request_headers();
+    
+    log_message('info', 'Jwt_model get_token_from_header - CI headers: ' . json_encode($headers));
 
     if (!$headers) {
         // fallback to getallheaders()
         if (function_exists('getallheaders')) {
             $headers = getallheaders();
+            log_message('info', 'Jwt_model get_token_from_header - getallheaders: ' . json_encode($headers));
         } else {
             $headers = [];
         }
     }
 
     foreach ($headers as $key => $value) {
+        log_message('info', 'Jwt_model get_token_from_header - header: ' . $key . ' = ' . $value);
         if (strtolower($key) === 'authorization') {
             if (preg_match('/Bearer\s(\S+)/', $value, $matches)) {
                 return $matches[1];
@@ -76,6 +81,7 @@ public function get_token_from_header() {
 
 
     if (!empty($_SERVER['HTTP_AUTHORIZATION'])) {
+        log_message('info', 'Jwt_model get_token_from_header - SERVER HTTP_AUTHORIZATION: ' . $_SERVER['HTTP_AUTHORIZATION']);
         if (preg_match('/Bearer\s(\S+)/', $_SERVER['HTTP_AUTHORIZATION'], $matches)) {
             return $matches[1];
         }
