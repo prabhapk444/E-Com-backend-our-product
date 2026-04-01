@@ -49,4 +49,13 @@ class Feedback_model extends CI_Model {
     public function delete($id) {
     return $this->db->where('id', $id)->delete($this->table);
    }
+
+public function get_latest_enabled($limit = 4) {
+    return $this->db
+        ->where('is_enabled', 1)
+        ->order_by('id', 'DESC')
+        ->limit($limit)
+        ->get('feedbacks')
+        ->result();
+}
 }

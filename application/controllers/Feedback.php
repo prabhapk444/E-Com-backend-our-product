@@ -126,4 +126,9 @@ class Feedback extends CI_Controller {
 
     return success_response("Feedback deleted successfully");
 }
+
+public function get_latest_enabled() {
+    $data = $this->Feedback_model->get_latest_enabled(4);
+    return success_response("Latest feedbacks fetched", $data);
+}
 }

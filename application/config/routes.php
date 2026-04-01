@@ -83,6 +83,7 @@ $route['api/feedback/update/(:num)'] = 'feedback/update/$1';
 $route['api/feedback/toggle/(:num)'] = 'feedback/toggle_status/$1';
 $route['api/feedback/enabled'] = 'feedback/get_enabled';
 $route['feedback/delete/(:num)'] = 'feedback/delete/$1';
+$route['feedback/latest-enabled'] = 'feedback/get_latest_enabled';
 
 
 
@@ -131,42 +132,36 @@ $route['products/variant/delete/(:num)'] = 'products/delete_variant/$1';
 
 
 // Order endpoints
-// Public - Create order (no token required)
-// Supports both /orders and /api/orders for frontend compatibility
+
 $route['orders'] = 'orders/create';
 $route['api/orders'] = 'orders/create';
 $route['api/orders/create'] = 'orders/create';
-
-// Public - Get order by ID
 $route['api/orders/get/(:num)'] = 'orders/get/$1';
-
-// Public - Get order by order_id
 $route['api/orders/view/(:any)'] = 'orders/view/$1';
-
-// Customer - Get my orders (auth required)
 $route['api/orders/my'] = 'orders/my_orders';
-
-// Customer - Cancel order (auth required)
 $route['api/orders/cancel/(:num)'] = 'orders/cancel/$1';
-
-// Admin - Get all orders
 $route['api/admin/orders'] = 'orders/index';
 $route['api/admin/orders/index'] = 'orders/index';
-
-// Admin - Get recent orders
 $route['api/admin/orders/recent'] = 'orders/recent';
-
-// Admin - Update order status
 $route['api/admin/orders/status/(:num)'] = 'orders/update_status/$1';
-
-// Admin/Payment - Update payment status
 $route['api/admin/orders/payment/(:num)'] = 'orders/update_payment/$1';
-
-// Admin - Get orders by status
 $route['api/admin/orders/status/(:any)'] = 'orders/by_status/$1';
-
-// Admin - Get specific order by ID
 $route['api/admin/orders/(:num)'] = 'orders/get_admin/$1';
-
-// Admin - Get sales stats
 $route['api/admin/orders/stats'] = 'orders/stats';
+
+
+
+
+
+// reviews endpoints
+
+$route['reviews/submit'] = 'reviews/submit';
+$route['reviews/product/(:num)'] = 'reviews/get_by_product/$1';
+$route['reviews/get_all'] = 'reviews/get_all';
+$route['reviews/toggle/(:num)'] = 'reviews/toggle/$1';
+$route['reviews/delete/(:num)'] = 'reviews/delete/$1';
+
+
+// settings endpoints
+$route['settings'] = 'settings/get';
+$route['settings/save'] = 'settings/save';
