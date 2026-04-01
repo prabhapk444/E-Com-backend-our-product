@@ -76,9 +76,9 @@ $query_builder = TRUE;
 $db['default'] = array(
 	'dsn'	=> '',
 	'hostname' => 'localhost',
-	'username' => (ENVIRONMENT !== 'production')?'root':'',
-	'password' => (ENVIRONMENT !== 'production')?'':'',
-	'database' => (ENVIRONMENT !== 'production')?'e-com':'cfgecs',
+	'username' => (ENVIRONMENT !== 'production')?'root':'u971454335_thriveecom',
+	'password' => (ENVIRONMENT !== 'production')?'':'Asusexpertbookp1series',
+	'database' => (ENVIRONMENT !== 'production')?'e-com':'u971454335_thriveecom',
 	'dbdriver' => 'mysqli',
 	'dbprefix' => '',
 	'pconnect' => FALSE,
