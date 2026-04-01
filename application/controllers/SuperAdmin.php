@@ -13,9 +13,9 @@ class SuperAdmin extends CI_Controller {
     // Verify token helper
     private function verify_superadmin() {
         $user = $this->Jwt_model->verify_token();
-        if (!$user || $user->role != 1) {
-            return null;
-        }
+      if (!$user || (int)$user->role !== 1) {
+    return null;
+}
         return $user;
     }
 
