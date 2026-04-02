@@ -24,9 +24,6 @@ class Products extends CI_Controller {
         }
     }
 
-    // ============================================
-    // HELPER METHODS
-    // ============================================
 
     private function get_current_user() {
         $token = $this->jwt_model->get_token_from_header();
@@ -363,28 +360,59 @@ if (empty($data) || (!isset($data['name']) && isset($_POST['data']))) {
 
         // Handle variants
         if (!empty($data['variants']) && is_array($data['variants'])) {
-           foreach ($data['variants'] as $index => $variant) {
+            foreach ($data['variants'] as $index => $variant) {
                 // Handle variant image upload
-              $variant_image = null;
+                $variant_image = null;
 
+                $variant_key = 'variant_image_' . $index;
 
-$variant_key = 'variant_image_' . $index;
-
-if (isset($_FILES[$variant_key]) && $_FILES[$variant_key]['error'] === UPLOAD_ERR_OK) {
-    $variant_image = $this->upload_image($variant_key, '');
-}
+                if (isset($_FILES[$variant_key]) && $_FILES[$variant_key]['error'] === UPLOAD_ERR_OK) {
+                    $variant_image = $this->upload_image($variant_key, '');
+                }
+                
                 $variant_data = [
                     'product_id' => $product_id,
                     'sku' => $variant['sku'] ?? null,
-                    'Attribute' => $variant['attribute'] ?? ($variant['attribute'] ?? null),
-                    'Value' => $variant['value'] ?? null,
                     'price' => $variant['price'] ?? 0,
                     'stock' => $variant['stock'] ?? 0,
                     'image' => $variant_image,
                     'is_active' => $variant['isActive'] ?? $variant['is_active'] ?? '1',
                     'created_by' => $user_id
                 ];
-                $this->product_model->create_variant($variant_data);
+                
+                // Handle attributes - new format with array of attributes
+                if (!empty($variant['attributes']) && is_array($variant['attributes'])) {
+                    foreach ($variant['attributes'] as $attr) {
+                        // Skip if name or value is null
+                        if (empty($attr['name']) && $attr['name'] !== '0') continue;
+                        if (empty($attr['value']) && $attr['value'] !== '0') continue;
+                        
+                        $attr_data = [
+                            'variant_id' => $variant_id,
+                            'name' => $attr['name'] ?? null,
+                            'value' => $attr['value'] ?? null
+                        ];
+                        $this->product_model->create_variant_attribute($attr_data);
+                    }
+                }
+                // Legacy single attribute support - only create if both name and value are provided
+                elseif (array_key_exists('attribute', $variant) || array_key_exists('Attribute', $variant)) {
+                    // Get the attribute name and value
+                    $attr_name = isset($variant['attribute']) ? $variant['attribute'] : (isset($variant['Attribute']) ? $variant['Attribute'] : null);
+                    $attr_value = isset($variant['value']) ? $variant['value'] : (isset($variant['Value']) ? $variant['Value'] : null);
+                    
+                    // Only create attribute record if both name and value are not null
+                    if (!empty($attr_name) || $attr_name === '0') {
+                        if (!empty($attr_value) || $attr_value === '0') {
+                            $attr_data = [
+                                'variant_id' => $variant_id,
+                                'name' => $attr_name,
+                                'value' => $attr_value
+                            ];
+                            $this->product_model->create_variant_attribute($attr_data);
+                        }
+                    }
+                }
             }
         }
 
@@ -471,36 +499,76 @@ if (empty($data)) {
         }
 
         if (!empty($data['variants']) && is_array($data['variants'])) {
-            // Delete existing variants
+            // Get existing variants to preserve images
             $old_variants = $this->product_model->get_variants($id);
+            $old_variant_map = [];
             foreach ($old_variants as $ov) {
-               if (!empty($ov['image']) && file_exists(FCPATH . $ov['image'])) {
-    unlink(FCPATH . $ov['image']);
-}
+                $old_variant_map[$ov['id']] = $ov;
             }
-            $this->product_model->delete_all_variants($id);
             
-            foreach ($data['variants'] as $index => $variant) {
-               $variant_image = $variant['existing_image'] ?? null;
+          foreach ($data['variants'] as $index => $variant) {
+    $variant_image = null;
 
-$variant_key = 'variant_image_' . $index;
+    // Check if this is an existing variant
+    if (!empty($variant['id']) && isset($old_variant_map[$variant['id']])) {
+        $variant_image = $old_variant_map[$variant['id']]['image']; // preserve old image
+    }
 
-if (isset($_FILES[$variant_key]) && $_FILES[$variant_key]['error'] === UPLOAD_ERR_OK) {
-    $variant_image = $this->upload_image($variant_key, '');
-}
+    $variant_key = 'variant_image_' . $index;
+
+    if (isset($_FILES[$variant_key]) && $_FILES[$variant_key]['error'] === UPLOAD_ERR_OK) {
+        // Only delete the old image if a new one is uploaded
+        if ($variant_image && file_exists(FCPATH . $variant_image)) {
+            unlink(FCPATH . $variant_image);
+        }
+        $variant_image = $this->upload_image($variant_key, '');
+    }
                 $variant_data = [
                     'product_id' => $id,
                     'sku' => $variant['sku'] ?? null,
-                  'Attribute' => $variant['attribute'] ?? ($variant['attribute'] ?? null),
-                    'Value' => $variant['value'] ?? null,
                     'price' => $variant['price'] ?? 0,
                     'stock' => $variant['stock'] ?? 0,
                     'image' => $variant_image,
-                    'is_active' => $variant['isActive'] ?? $variant['is_active'] ?? '1',
+                    'is_active' => $variant['is_active'] ?? $variant['is_active'] ?? '1',
                     'created_by' => $user_id,
                     'updated_by' => $user_id
                 ];
-                $this->product_model->create_variant($variant_data);
+                
+                $variant_id = $this->product_model->create_variant($variant_data);
+                
+                // Handle attributes - new format with array of attributes
+                if (!empty($variant['attributes']) && is_array($variant['attributes'])) {
+                    foreach ($variant['attributes'] as $attr) {
+                        // Skip if name or value is null
+                        if (empty($attr['name']) && $attr['name'] !== '0') continue;
+                        if (empty($attr['value']) && $attr['value'] !== '0') continue;
+                        
+                        $attr_data = [
+                            'variant_id' => $variant_id,
+                            'name' => $attr['name'] ?? null,
+                            'value' => $attr['value'] ?? null
+                        ];
+                        $this->product_model->create_variant_attribute($attr_data);
+                    }
+                }
+                // Legacy single attribute support - only create if both name and value are provided
+                elseif (array_key_exists('attribute', $variant) || array_key_exists('Attribute', $variant)) {
+                    // Get the attribute name and value
+                    $attr_name = isset($variant['attribute']) ? $variant['attribute'] : (isset($variant['Attribute']) ? $variant['Attribute'] : null);
+                    $attr_value = isset($variant['value']) ? $variant['value'] : (isset($variant['Value']) ? $variant['Value'] : null);
+                    
+                    // Only create attribute record if both name and value are not null
+                    if (!empty($attr_name) || $attr_name === '0') {
+                        if (!empty($attr_value) || $attr_value === '0') {
+                            $attr_data = [
+                                'variant_id' => $variant_id,
+                                'name' => $attr_name,
+                                'value' => $attr_value
+                            ];
+                            $this->product_model->create_variant_attribute($attr_data);
+                        }
+                    }
+                }
             }
         }
 
@@ -579,6 +647,47 @@ if (isset($_FILES[$variant_key]) && $_FILES[$variant_key]['error'] === UPLOAD_ER
         }
 
         success_response('Product status updated successfully', $result);
+    }
+
+    // ============================================
+    // VARIANT MANAGEMENT
+    // ============================================
+
+    // Delete a single variant
+    public function delete_variant($id) {
+        $permission = $this->has_permission('2');
+        if (!$permission['valid']) {
+            if ($permission['message'] === 'Unauthorized') {
+                unauthorized('Authentication required');
+            } else {
+                forbidden($permission['message']);
+            }
+            return;
+        }
+
+        $variant = $this->product_model->get_variant_by_id($id);
+        if (!$variant) {
+            not_found('Variant not found');
+            return;
+        }
+
+        // Delete variant image
+        if (!empty($variant['image']) && file_exists(FCPATH . $variant['image'])) {
+            unlink(FCPATH . $variant['image']);
+        }
+
+        // Delete variant attributes first
+        $this->product_model->delete_variant_attributes($id);
+
+        // Delete the variant
+        $result = $this->product_model->delete_variant($id);
+
+        if (!$result) {
+            error_response('Failed to delete variant', 500);
+            return;
+        }
+
+        success_response('Variant deleted successfully', ['id' => $id]);
     }
 
 }
