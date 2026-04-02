@@ -7,6 +7,7 @@ class Product_model extends CI_Model {
         parent::__construct();
         $this->table = 'products';
         $this->variants_table = 'product_variants';
+        $this->attributes_table = 'variant_attributes';
     }
 
     // Get all products with pagination and filters
@@ -88,7 +89,16 @@ class Product_model extends CI_Model {
         $this->db->where('product_id', $product_id);
         $this->db->order_by('id', 'ASC');
         $query = $this->db->get($this->variants_table);
-        return $query->result_array();
+        $variants = $query->result_array();
+        
+        // Get attributes for each variant
+        foreach ($variants as &$variant) {
+            $this->db->where('variant_id', $variant['id']);
+            $attr_query = $this->db->get($this->attributes_table);
+            $variant['attributes'] = $attr_query->result_array();
+        }
+        
+        return $variants;
     }
 
     // Get single variant
@@ -145,12 +155,26 @@ class Product_model extends CI_Model {
     }
 
     // Create variant
-    public function create_variant($data) {
+    public function create_variant($data, $attributes = []) {
         $data['created_at'] = date('Y-m-d H:i:s');
         $data['updated_at'] = date('Y-m-d H:i:s');
         
         $this->db->insert($this->variants_table, $data);
-        return $this->db->insert_id();
+        $variant_id = $this->db->insert_id();
+        
+        // Add attributes if provided
+        if (!empty($attributes) && is_array($attributes)) {
+            foreach ($attributes as $attr) {
+                $attr_data = [
+                    'variant_id' => $variant_id,
+                    'name' => $attr['name'] ?? null,
+                    'value' => $attr['value'] ?? null
+                ];
+                $this->db->insert($this->attributes_table, $attr_data);
+            }
+        }
+        
+        return $variant_id;
     }
 
     // Update variant
@@ -169,6 +193,17 @@ class Product_model extends CI_Model {
 
     // Delete all variants of a product
     public function delete_all_variants($product_id) {
+        // First get all variant IDs
+        $this->db->where('product_id', $product_id);
+        $variants = $this->db->get($this->variants_table)->result_array();
+        
+        // Delete all attributes for these variants
+        foreach ($variants as $variant) {
+            $this->db->where('variant_id', $variant['id']);
+            $this->db->delete($this->attributes_table);
+        }
+        
+        // Then delete the variants
         $this->db->where('product_id', $product_id);
         return $this->db->delete($this->variants_table);
     }
@@ -216,5 +251,40 @@ class Product_model extends CI_Model {
         $this->db->group_by('category_id');
         $query = $this->db->get($this->table);
         return $query->result_array();
+    }
+
+    // ============================================
+    // VARIANT ATTRIBUTES METHODS
+    // ============================================
+
+    // Create variant attribute
+    public function create_variant_attribute($data) {
+        $data['created_at'] = date('Y-m-d H:i:s');
+        $this->db->insert($this->attributes_table, $data);
+        return $this->db->insert_id();
+    }
+
+    // Get attributes for a variant
+    public function get_variant_attributes($variant_id) {
+        $this->db->where('variant_id', $variant_id);
+        $query = $this->db->get($this->attributes_table);
+        return $query->result_array();
+    }
+
+    // Delete all attributes for a variant
+    public function delete_variant_attributes($variant_id) {
+        $this->db->where('variant_id', $variant_id);
+        return $this->db->delete($this->attributes_table);
+    }
+
+    // Get variants with attributes
+    public function get_variants_with_attributes($product_id) {
+        $variants = $this->get_variants($product_id);
+        
+        foreach ($variants as &$variant) {
+            $variant['attributes'] = $this->get_variant_attributes($variant['id']);
+        }
+        
+        return $variants;
     }
 }
