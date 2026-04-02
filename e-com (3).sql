@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 01, 2026 at 07:36 AM
+-- Generation Time: Apr 02, 2026 at 08:31 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.1.25
 
@@ -42,7 +42,8 @@ CREATE TABLE `categories` (
 --
 
 INSERT INTO `categories` (`id`, `name`, `is_enabled`, `createdby`, `updatedby`, `createdat`, `updatedat`) VALUES
-(1, 'Electronics', 1, 5, 5, '2026-03-24 05:21:11', '2026-03-25 06:09:42');
+(1, 'Electronics', 1, 5, 5, '2026-03-24 05:21:11', '2026-03-25 06:09:42'),
+(2, 'Men', 1, 5, 5, '2026-04-01 10:10:22', '2026-04-01 10:14:52');
 
 -- --------------------------------------------------------
 
@@ -100,13 +101,6 @@ CREATE TABLE `orders` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `orders`
---
-
-INSERT INTO `orders` (`id`, `order_id`, `name`, `email`, `phone`, `address`, `city`, `state`, `pincode`, `subtotal`, `cgst`, `sgst`, `total`, `payment_method`, `payment_id`, `payment_status`, `status`, `updated_by`, `updated_at`, `created_at`) VALUES
-(1, 'ORD-69CB9715783FD', 'prabha', 'viperprabhakaran@gmail.com', '6383786437', 'sedan kinatru street', 'sivakasi', 'Tamil Nadu', '626130', 4200.00, 105.00, 105.00, 4410.00, 'cod', NULL, 'cod', 'cancelled', NULL, '2026-03-31 10:14:30', '2026-03-31 09:42:45');
-
 -- --------------------------------------------------------
 
 --
@@ -124,13 +118,6 @@ CREATE TABLE `order_items` (
   `price` decimal(10,2) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `order_items`
---
-
-INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `product_name`, `variant_id`, `variant_name`, `quantity`, `price`, `created_at`) VALUES
-(1, 1, 2, 'Classical Smart watches', 11, 'Color: White', 1, 4200.00, '2026-03-31 09:42:45');
 
 -- --------------------------------------------------------
 
@@ -194,7 +181,8 @@ CREATE TABLE `products` (
 --
 
 INSERT INTO `products` (`id`, `name`, `description`, `category_id`, `subcategory_id`, `quantity`, `price`, `image`, `rating`, `review_count`, `gst`, `weight`, `hsn_code`, `is_active`, `created_by`, `updated_by`, `created_at`, `updated_at`, `featured`) VALUES
-(2, 'Classical Smart watches', 'Stylish black smart watch with modern design and essential features. It comes with fitness tracking, heart rate monitoring, and long-lasting battery life. Perfect for daily use with a comfortable strap and sleek look', 1, 1, 20, 4500.00, 'uploads/products/1774418916_watch 1.webp', 0.00, 0, '5', '200g', '5201', '1', 5, 5, '2026-03-25 06:48:43', '2026-03-26 04:16:34', 1);
+(4, 'Classical Smart watche', 'Stylish black smart watch with modern design and essential features. It comes with fitness tracking, heart rate monitoring, and long-lasting battery life. Perfect for daily use with a comfortable strap and sleek look', 1, 1, 30, 4100.00, 'uploads/products/1775053721_black new.webp', 0.00, 0, '5', '400g', '5201', '1', 5, 5, '2026-04-01 16:28:41', '2026-04-01 18:33:12', 1),
+(5, 'Full Sleeve Shirt', 'Stylish and comfortable full sleeve shirt made from premium cotton fabric. Perfect for casual and office wear, featuring a modern fit, breathable material, and vibrant colors that stay fresh all day. Available in multiple Colors.', 2, 2, 20, 450.00, 'uploads/products/1775061530_navy blue.webp', 5.00, 1, '5', '220g', '6205', '0', 5, 5, '2026-04-01 18:37:00', '2026-04-02 11:41:01', 1);
 
 -- --------------------------------------------------------
 
@@ -206,8 +194,6 @@ CREATE TABLE `product_variants` (
   `id` int(11) NOT NULL,
   `product_id` int(11) NOT NULL,
   `sku` varchar(100) DEFAULT NULL,
-  `Attribute` varchar(100) DEFAULT NULL,
-  `Value` varchar(100) DEFAULT NULL,
   `price` decimal(10,2) NOT NULL DEFAULT 0.00,
   `stock` int(11) DEFAULT 0,
   `image` varchar(500) DEFAULT NULL,
@@ -222,8 +208,56 @@ CREATE TABLE `product_variants` (
 -- Dumping data for table `product_variants`
 --
 
-INSERT INTO `product_variants` (`id`, `product_id`, `sku`, `Attribute`, `Value`, `price`, `stock`, `image`, `is_active`, `created_by`, `updated_by`, `created_at`, `updated_at`) VALUES
-(11, 2, 'SM02', 'Color', 'White', 4200.00, 10, 'uploads/products/1774494134_white.jpg', '1', 5, 5, '2026-03-26 04:02:14', '2026-03-26 04:02:14');
+INSERT INTO `product_variants` (`id`, `product_id`, `sku`, `price`, `stock`, `image`, `is_active`, `created_by`, `updated_by`, `created_at`, `updated_at`) VALUES
+(38, 4, 'SM01', 4600.00, 20, 'uploads/products/1775060008_white.jpg', '1', 5, 5, '2026-04-01 18:13:28', '2026-04-01 18:13:28'),
+(44, 5, 'FS01', 400.00, 15, 'uploads/products/1775065951_green.webp', '1', 5, 5, '2026-04-01 19:52:31', '2026-04-01 19:52:31');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `reviews`
+--
+
+CREATE TABLE `reviews` (
+  `id` int(11) NOT NULL,
+  `product_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `rating` int(11) NOT NULL,
+  `title` varchar(150) DEFAULT NULL,
+  `message` text DEFAULT NULL,
+  `is_enabled` tinyint(1) DEFAULT 0,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NULL DEFAULT NULL ON UPDATE current_timestamp(),
+  `updatedby` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `reviews`
+--
+
+INSERT INTO `reviews` (`id`, `product_id`, `user_id`, `rating`, `title`, `message`, `is_enabled`, `created_at`, `updated_at`, `updatedby`) VALUES
+(1, 5, 2, 5, 'nice produts', 'i love this collection', 1, '2026-04-02 06:10:52', '2026-04-02 06:11:01', 5);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `settings`
+--
+
+CREATE TABLE `settings` (
+  `id` int(11) NOT NULL,
+  `name` varchar(150) DEFAULT NULL,
+  `email` varchar(150) DEFAULT NULL,
+  `phone` varchar(20) DEFAULT NULL,
+  `low_stock_threshold` int(11) DEFAULT NULL,
+  `description` text DEFAULT NULL,
+  `logo` text DEFAULT NULL,
+  `about_image` text DEFAULT NULL,
+  `created_by` int(11) DEFAULT NULL,
+  `updated_by` int(11) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NULL DEFAULT NULL ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -247,7 +281,8 @@ CREATE TABLE `subcategories` (
 --
 
 INSERT INTO `subcategories` (`id`, `name`, `category_id`, `is_enabled`, `createdby`, `updatedby`, `createdat`, `updatedat`) VALUES
-(1, 'Smart Watches', 1, 1, 5, 5, '2026-03-24 06:22:58', '2026-03-25 06:10:05');
+(1, 'Smart Watches', 1, 1, 5, 5, '2026-03-24 06:22:58', '2026-03-25 06:10:05'),
+(2, 'Shirts', 2, 1, 5, 5, '2026-04-01 10:10:34', '2026-04-01 10:15:03');
 
 -- --------------------------------------------------------
 
@@ -281,6 +316,28 @@ INSERT INTO `users` (`id`, `name`, `email`, `place`, `phonenumber`, `password`, 
 (3, 'prabha', 'thriveprabha@gmail.com', NULL, NULL, '$2y$10$7pCPIEgSPLkqujOhoF.myec0WbeSpGMxNCWLWXlm90vg2Z/3H.Hha', NULL, 3, NULL, NULL, '2026-03-23 13:32:24', '2026-03-23 13:32:24', 1),
 (5, 'Prabhakaran', 'prabhakarans@anjaconline.org', 'Sivakasi', NULL, '$2y$10$TJ.6PIz3sUEIx0ywEs3shuxTeH3G5BVX6QRVSq71CtMiywJc7tSRW', NULL, 2, NULL, NULL, '2026-03-23 00:00:00', '2026-03-23 23:12:23', 1),
 (6, 'Ganesh Krishna', 'gk3946020@gmail.com', 'Srivi', NULL, '$2y$10$w9DdfLslL228GYePxDxaA.cGh9i9E3bB3aJ0RqZAJeBvhlM8lfqx.', NULL, 2, NULL, NULL, '2026-03-23 00:00:00', '2026-03-23 23:03:31', 1);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `variant_attributes`
+--
+
+CREATE TABLE `variant_attributes` (
+  `id` int(11) NOT NULL,
+  `variant_id` int(11) NOT NULL,
+  `name` varchar(100) NOT NULL,
+  `value` varchar(100) NOT NULL,
+  `created_at` datetime DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `variant_attributes`
+--
+
+INSERT INTO `variant_attributes` (`id`, `variant_id`, `name`, `value`, `created_at`) VALUES
+(2, 38, 'Color', 'White', '2026-04-01 18:13:28'),
+(8, 44, 'Color', 'Green', '2026-04-01 19:52:31');
 
 --
 -- Indexes for dumped tables
@@ -342,6 +399,19 @@ ALTER TABLE `product_variants`
   ADD KEY `idx_is_active` (`is_active`);
 
 --
+-- Indexes for table `reviews`
+--
+ALTER TABLE `reviews`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `unique_review` (`product_id`,`user_id`);
+
+--
+-- Indexes for table `settings`
+--
+ALTER TABLE `settings`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `subcategories`
 --
 ALTER TABLE `subcategories`
@@ -361,6 +431,13 @@ ALTER TABLE `users`
   ADD KEY `idx_google_id` (`google_id`);
 
 --
+-- Indexes for table `variant_attributes`
+--
+ALTER TABLE `variant_attributes`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `variant_id` (`variant_id`);
+
+--
 -- AUTO_INCREMENT for dumped tables
 --
 
@@ -368,7 +445,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `categories`
 --
 ALTER TABLE `categories`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `feedbacks`
@@ -380,13 +457,13 @@ ALTER TABLE `feedbacks`
 -- AUTO_INCREMENT for table `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `order_items`
 --
 ALTER TABLE `order_items`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `password_reset_tokens`
@@ -398,25 +475,43 @@ ALTER TABLE `password_reset_tokens`
 -- AUTO_INCREMENT for table `products`
 --
 ALTER TABLE `products`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `product_variants`
 --
 ALTER TABLE `product_variants`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=46;
+
+--
+-- AUTO_INCREMENT for table `reviews`
+--
+ALTER TABLE `reviews`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT for table `settings`
+--
+ALTER TABLE `settings`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `subcategories`
 --
 ALTER TABLE `subcategories`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+
+--
+-- AUTO_INCREMENT for table `variant_attributes`
+--
+ALTER TABLE `variant_attributes`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- Constraints for dumped tables
@@ -445,6 +540,12 @@ ALTER TABLE `product_variants`
 --
 ALTER TABLE `subcategories`
   ADD CONSTRAINT `fk_subcat_cat` FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `variant_attributes`
+--
+ALTER TABLE `variant_attributes`
+  ADD CONSTRAINT `variant_attributes_ibfk_1` FOREIGN KEY (`variant_id`) REFERENCES `product_variants` (`id`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
