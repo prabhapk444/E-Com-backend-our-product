@@ -38,19 +38,22 @@ public function __construct() {
     }
 
   
-    public function update_product_rating($product_id) {
-        $result = $this->db
-            ->select('AVG(rating) as avg_rating, COUNT(*) as total')
-            ->where('product_id', $product_id)
-            ->where('is_enabled', 1)
-            ->get('reviews')
-            ->row();
+public function update_product_rating($product_id) {
+    $result = $this->db
+        ->select('AVG(rating) as avg_rating, COUNT(*) as total')
+        ->where('product_id', $product_id)
+        ->where('is_enabled', 1)
+        ->get('reviews')
+        ->row();
 
-        $this->db->where('id', $product_id)->update('products', [
-            'rating' => round($result->avg_rating, 1),
-            'review_count' => $result->total
-        ]);
-    }
+    $avg = $result->avg_rating ? round($result->avg_rating, 1) : 0;
+    $count = $result->total ? $result->total : 0;
+
+    $this->db->where('id', $product_id)->update('products', [
+        'rating' => $avg,
+        'review_count' => $count
+    ]);
+}
 
     public function get_all() {
     $this->db->select('r.*, u.name as customerName, u.email as customerEmail, p.name as productName');

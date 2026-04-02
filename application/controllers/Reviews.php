@@ -53,16 +53,33 @@ public function toggle($id) {
     $user = $this->Jwt_model->verify_token();
     if (!$user) return unauthorized("Login required");
 
+  
+    $review = $this->db->where('id', $id)->get('reviews')->row();
+
+    if (!$review) return error_response("Review not found");
+
     $this->Review_model->toggle_status($id, $user->uid);
+
+   
+    $this->Review_model->update_product_rating($review->product_id);
+
     return success_response("Status updated");
 }
-
 
 public function delete($id) {
     $user = $this->Jwt_model->verify_token();
     if (!$user) return unauthorized("Login required");
 
+
+    $review = $this->db->where('id', $id)->get('reviews')->row();
+
+    if (!$review) return error_response("Review not found");
+
     $this->Review_model->delete($id);
+
+    $this->Review_model->update_product_rating($review->product_id);
+
     return success_response("Review deleted");
 }
+
 }
