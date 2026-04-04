@@ -372,13 +372,15 @@ if (empty($data) || (!isset($data['name']) && isset($_POST['data']))) {
                 
                 $variant_data = [
                     'product_id' => $product_id,
-                    'sku' => $new_sku,
+                    'sku' => $variant['sku'] ?? null,
                     'price' => $variant['price'] ?? 0,
                     'stock' => $variant['stock'] ?? 0,
                     'image' => $variant_image,
                     'is_active' => $variant['isActive'] ?? $variant['is_active'] ?? '1',
                     'created_by' => $user_id
                 ];
+                
+                $variant_id = $this->product_model->create_variant($variant_data);
                 
                 // Handle attributes - new format with array of attributes
                 if (!empty($variant['attributes']) && is_array($variant['attributes'])) {
@@ -425,198 +427,178 @@ if (empty($data) || (!isset($data['name']) && isset($_POST['data']))) {
     }
 
     public function update($id) {
-        $permission = $this->has_permission('2');
-        if (!$permission['valid']) {
-            if ($permission['message'] === 'Unauthorized') {
-                unauthorized('Authentication required');
-            } else {
-                forbidden($permission['message']);
-            }
-            return;
-        }
-
-        $user = $permission['user'];
-        $user_id = isset($user->id) ? $user->id : (isset($user->user_id) ? $user->user_id : (isset($user->uid) ? $user->uid : null));
-
-        $product = $this->product_model->get_by_id($id);
-        if (!$product) {
-            not_found('Product not found');
-            return;
-        }
-
-$json_input = file_get_contents('php://input');
-$json_data = json_decode($json_input, true);
-
-$data = $json_data;
-
-
-if (empty($data) && isset($_POST['data'])) {
-    $data = json_decode($_POST['data'], true);
-}
-
-
-if (empty($data)) {
-    $data = $_POST;
-}
-
-        if (!empty($data['name']) && $data['name'] !== $product['name']) {
-           
-        }
-
-        // Handle main product image upload
-        $image_filename = $product['image'];
-        if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
-            // Delete old image
-           if (!empty($product['image']) && file_exists(FCPATH . $product['image'])) {
-    unlink(FCPATH . $product['image']);
-}
-            $image_filename = $this->upload_image('image', '');
-        }
-
-   
-
-        $product_data = [
-            'name' => $data['name'] ?? $product['name'],
-            'description' => $data['description'] ?? $product['description'],
-            'category_id' => $data['categoryId'] ?? $data['category_id'] ?? $product['category_id'],
-            'subcategory_id' => $data['subcategoryId'] ?? $data['subcategory_id'] ?? $product['subcategory_id'],
-            'image' => $image_filename,
-            'price' => $data['price'] ?? $product['price'],
-            'quantity' => $data['quantity'] ?? $product['quantity'],
-            'gst' => $data['gst'] ?? $product['gst'],
-            'weight' => $data['weight'] ?? $product['weight'],
-            'hsn_code' => $data['hsnCode'] ?? $data['hsn_code'] ?? $product['hsn_code'],
-            'is_active' => $data['isActive'] ?? $data['is_active'] ?? $product['is_active'],
-            'featured' => isset($data['featured']) ? $data['featured'] : (isset($data['is_featured']) ? $data['is_featured'] : $product['featured']),
-            'updated_by' => $user_id
-        ];
-
-        $result = $this->product_model->update($id, $product_data);
-
-        if (!$result) {
-            error_response('Failed to update product', 500);
-            return;
-        }
-
-        if (!empty($data['variants']) && is_array($data['variants'])) {
-            // Get existing variants to track which ones to delete
-            $old_variants = $this->product_model->get_variants($id);
-            $old_variant_ids = array_column($old_variants, 'id');
-            $updated_variant_ids = [];
-            
-            foreach ($data['variants'] as $index => $variant) {
-                $variant_image = null;
-                $is_existing = !empty($variant['id']);
-                
-                // Check if this is an existing variant
-                if ($is_existing) {
-                    $variant_id = $variant['id'];
-                    $updated_variant_ids[] = $variant_id;
-                    
-                    // Get existing variant to preserve image if not uploading new one
-                    $existing_variant = $this->product_model->get_variant_by_id($variant_id);
-                    $variant_image = $existing_variant['image'] ?? null;
-                }
-
-                // Handle variant image upload
-                $variant_key = 'variant_image_' . $index;
-
-                if (isset($_FILES[$variant_key]) && $_FILES[$variant_key]['error'] === UPLOAD_ERR_OK) {
-                    // Only delete the old image if a new one is uploaded
-                    if ($variant_image && file_exists(FCPATH . $variant_image)) {
-                        unlink(FCPATH . $variant_image);
-                    }
-                    $variant_image = $this->upload_image($variant_key, '');
-                }
-
-                $variant_data = [
-                    'sku' => $new_sku,
-                    'price' => $variant['price'] ?? 0,
-                    'stock' => $variant['stock'] ?? 0,
-                    'image' => $variant_image,
-                    'is_active' => $variant['is_active'] ?? $variant['isActive'] ?? '1',
-                    'updated_by' => $user_id
-                ];
-                
-                if ($is_existing) {
-                    // Update existing variant
-                    $this->product_model->update_variant($variant_id, $variant_data);
-                } else {
-                    // Create new variant
-                    $variant_data['product_id'] = $id;
-                    $variant_data['created_by'] = $user_id;
-                    $variant_id = $this->product_model->create_variant($variant_data);
-                    $updated_variant_ids[] = $variant_id;
-                }
-                
-                // Only delete and re-create attributes if attributes are explicitly provided in the update
-                $has_attributes = isset($variant['attributes']) && is_array($variant['attributes']);
-                $has_legacy_attribute = array_key_exists('attribute', $variant) || array_key_exists('Attribute', $variant);
-                
-                if ($has_attributes || $has_legacy_attribute) {
-                    // Delete old attributes and re-create them
-                    $this->product_model->delete_variant_attributes($variant_id);
-                    
-                    // Handle attributes - new format with array of attributes
-                    if ($has_attributes) {
-                        foreach ($variant['attributes'] as $attr) {
-                            // Skip if name or value is null
-                            if (empty($attr['name']) && $attr['name'] !== '0') continue;
-                            if (empty($attr['value']) && $attr['value'] !== '0') continue;
-                            
-                            $attr_data = [
-                                'variant_id' => $variant_id,
-                                'name' => $attr['name'] ?? null,
-                                'value' => $attr['value'] ?? null
-                            ];
-                            $this->product_model->create_variant_attribute($attr_data);
-                        }
-                    }
-                    // Legacy single attribute support - only create if both name and value are provided
-                    elseif ($has_legacy_attribute) {
-                        // Get the attribute name and value
-                        $attr_name = isset($variant['attribute']) ? $variant['attribute'] : (isset($variant['Attribute']) ? $variant['Attribute'] : null);
-                        $attr_value = isset($variant['value']) ? $variant['value'] : (isset($variant['Value']) ? $variant['Value'] : null);
-                        
-                        // Only create attribute record if both name and value are not null
-                        if (!empty($attr_name) || $attr_name === '0') {
-                            if (!empty($attr_value) || $attr_value === '0') {
-                                $attr_data = [
-                                    'variant_id' => $variant_id,
-                                    'name' => $attr_name,
-                                    'value' => $attr_value
-                                ];
-                                $this->product_model->create_variant_attribute($attr_data);
-                            }
-                        }
-                    }
-                }
-            }
-            
-            // Delete variants that are no longer in the request
-            $variants_to_delete = array_diff($old_variant_ids, $updated_variant_ids);
-            foreach ($variants_to_delete as $old_variant_id) {
-                // Delete variant attributes first
-                $this->product_model->delete_variant_attributes($old_variant_id);
-                // Delete the variant
-                $this->product_model->delete_variant($old_variant_id);
-            }
+    $permission = $this->has_permission('2');
+    if (!$permission['valid']) {
+        if ($permission['message'] === 'Unauthorized') {
+            unauthorized('Authentication required');
         } else {
-            // If no variants provided, delete all existing variants
-            $old_variants = $this->product_model->get_variants($id);
-            foreach ($old_variants as $old_variant) {
-                $this->product_model->delete_variant_attributes($old_variant['id']);
-                $this->product_model->delete_variant($old_variant['id']);
-            }
+            forbidden($permission['message']);
+        }
+        return;
+    }
+
+    $user = $permission['user'];
+    $user_id = $user->id ?? $user->user_id ?? $user->uid ?? null;
+
+    $product = $this->product_model->get_by_id($id);
+    if (!$product) {
+        not_found('Product not found');
+        return;
+    }
+
+    // ================= GET DATA =================
+    $data = json_decode(file_get_contents('php://input'), true);
+
+    if (empty($data) && isset($_POST['data'])) {
+        $data = json_decode($_POST['data'], true);
+    }
+
+    if (empty($data)) {
+        $data = $_POST;
+    }
+
+    // ================= IMAGE HANDLING =================
+    $image_filename = $product['image'];
+
+    // Remove image
+    if (!empty($data['removeImage'])) {
+        if (!empty($product['image']) && file_exists(FCPATH . $product['image'])) {
+            unlink(FCPATH . $product['image']);
+        }
+        $image_filename = null;
+    }
+
+    // Upload new image
+    if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
+        if (!empty($product['image']) && file_exists(FCPATH . $product['image'])) {
+            unlink(FCPATH . $product['image']);
+        }
+        $image_filename = $this->upload_image('image', '');
+    }
+
+    // ================= PRODUCT UPDATE =================
+    $product_data = [
+        'name' => $data['name'] ?? $product['name'],
+        'description' => $data['description'] ?? $product['description'],
+        'category_id' => $data['categoryId'] ?? $data['category_id'] ?? $product['category_id'],
+        'subcategory_id' => $data['subcategoryId'] ?? $data['subcategory_id'] ?? $product['subcategory_id'],
+        'image' => $image_filename,
+        'price' => $data['price'] ?? $product['price'],
+        'quantity' => $data['quantity'] ?? $product['quantity'],
+        'gst' => $data['gst'] ?? $product['gst'],
+        'weight' => $data['weight'] ?? $product['weight'],
+        'hsn_code' => $data['hsnCode'] ?? $data['hsn_code'] ?? $product['hsn_code'],
+        'is_active' => $data['isActive'] ?? $data['is_active'] ?? $product['is_active'],
+        'featured' => $data['featured'] ?? $data['is_featured'] ?? $product['featured'],
+        'updated_by' => $user_id
+    ];
+
+    $this->product_model->update($id, $product_data);
+
+    // ================= VARIANTS =================
+    if (!empty($data['variants']) && is_array($data['variants'])) {
+
+        $old_variants = $this->product_model->get_variants($id);
+        $old_ids = array_column($old_variants, 'id');
+        $new_ids = [];
+
+      foreach ($data['variants'] as $index => $variant) {
+$is_existing = false;
+
+if (!empty($variant['id'])) {
+    $check = $this->product_model->get_variant_by_id($variant['id']);
+    if ($check) {
+        $is_existing = true;
+        $variant_id = $variant['id'];
+        $new_ids[] = $variant_id;
+        $existing_variant = $check;
+    }
+}
+    $variant_image = null;
+
+    if ($is_existing) {
+        $variant_id = $variant['id'];
+        $new_ids[] = $variant_id;
+
+        $existing_variant = $this->product_model->get_variant_by_id($variant_id);
+
+  
+        $variant_image = $existing_variant['image'] ?? null;
+    }
+
+    $variant_key = 'variant_image_' . $index;
+
+
+    if (isset($_FILES[$variant_key]) && $_FILES[$variant_key]['error'] === UPLOAD_ERR_OK) {
+
+     
+        if (!empty($variant_image) && file_exists(FCPATH . $variant_image)) {
+            unlink(FCPATH . $variant_image);
         }
 
-        $updated_product = $this->product_model->get_by_id($id);
-        $updated_product['variants'] = $this->product_model->get_variants($id);
-        $updated_product['categoryId'] = $updated_product['category_id'];
-        $updated_product['subcategoryId'] = $updated_product['subcategory_id'];
-
-        success_response('Product updated successfully', $updated_product);
+        $variant_image = $this->upload_image($variant_key, '');
     }
+
+
+    if ($is_existing && empty($variant_image)) {
+        $variant_image = $existing_variant['image'] ?? null;
+    }
+            $variant_data = [
+                'sku' => $variant['sku'] ?? null,
+                'price' => $variant['price'] ?? 0,
+                'stock' => $variant['stock'] ?? 0,
+                'image' => $variant_image,
+                'is_active' => $variant['is_active'] ?? $variant['isActive'] ?? '1',
+                'updated_by' => $user_id
+            ];
+
+            if ($is_existing) {
+                $this->product_model->update_variant($variant_id, $variant_data);
+            } else {
+                $variant_data['product_id'] = $id;
+                $variant_data['created_by'] = $user_id;
+
+                $variant_id = $this->product_model->create_variant($variant_data);
+                $new_ids[] = $variant_id;
+            }
+
+           if (isset($variant['attributes']) && is_array($variant['attributes']) && !empty($variant_id)) {
+
+    $this->product_model->delete_variant_attributes($variant_id);
+
+    foreach ($variant['attributes'] as $attr) {
+        if (!empty($attr['name']) && !empty($attr['value'])) {
+            $this->product_model->create_variant_attribute([
+                'variant_id' => $variant_id,
+                'name' => $attr['name'],
+                'value' => $attr['value']
+            ]);
+        }
+    }
+}
+        }
+
+        // ================= DELETE REMOVED VARIANTS =================
+        $to_delete = array_diff($old_ids, $new_ids);
+
+        foreach ($to_delete as $vid) {
+            $variant = $this->product_model->get_variant_by_id($vid);
+
+            if (!empty($variant['image']) && file_exists(FCPATH . $variant['image'])) {
+                unlink(FCPATH . $variant['image']);
+            }
+
+            $this->product_model->delete_variant_attributes($vid);
+            $this->product_model->delete_variant($vid);
+        }
+    }
+
+    // ================= RESPONSE =================
+    $updated_product = $this->product_model->get_by_id($id);
+    $updated_product['variants'] = $this->product_model->get_variants($id);
+
+    success_response('Product updated successfully', $updated_product);
+}
 
     public function delete($id) {
         $permission = $this->has_permission('2');
