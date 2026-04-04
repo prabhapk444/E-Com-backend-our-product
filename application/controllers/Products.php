@@ -372,7 +372,7 @@ if (empty($data) || (!isset($data['name']) && isset($_POST['data']))) {
                 
                 $variant_data = [
                     'product_id' => $product_id,
-                    'sku' => $variant['sku'] ?? null,
+                    'sku' => $new_sku,
                     'price' => $variant['price'] ?? 0,
                     'stock' => $variant['stock'] ?? 0,
                     'image' => $variant_image,
@@ -530,7 +530,7 @@ if (empty($data)) {
                 }
 
                 $variant_data = [
-                    'sku' => $variant['sku'] ?? null,
+                    'sku' => $new_sku,
                     'price' => $variant['price'] ?? 0,
                     'stock' => $variant['stock'] ?? 0,
                     'image' => $variant_image,
@@ -549,39 +549,45 @@ if (empty($data)) {
                     $updated_variant_ids[] = $variant_id;
                 }
                 
-                // Delete old attributes and re-create them
-                $this->product_model->delete_variant_attributes($variant_id);
+                // Only delete and re-create attributes if attributes are explicitly provided in the update
+                $has_attributes = isset($variant['attributes']) && is_array($variant['attributes']);
+                $has_legacy_attribute = array_key_exists('attribute', $variant) || array_key_exists('Attribute', $variant);
                 
-                // Handle attributes - new format with array of attributes
-                if (!empty($variant['attributes']) && is_array($variant['attributes'])) {
-                    foreach ($variant['attributes'] as $attr) {
-                        // Skip if name or value is null
-                        if (empty($attr['name']) && $attr['name'] !== '0') continue;
-                        if (empty($attr['value']) && $attr['value'] !== '0') continue;
-                        
-                        $attr_data = [
-                            'variant_id' => $variant_id,
-                            'name' => $attr['name'] ?? null,
-                            'value' => $attr['value'] ?? null
-                        ];
-                        $this->product_model->create_variant_attribute($attr_data);
-                    }
-                }
-                // Legacy single attribute support - only create if both name and value are provided
-                elseif (array_key_exists('attribute', $variant) || array_key_exists('Attribute', $variant)) {
-                    // Get the attribute name and value
-                    $attr_name = isset($variant['attribute']) ? $variant['attribute'] : (isset($variant['Attribute']) ? $variant['Attribute'] : null);
-                    $attr_value = isset($variant['value']) ? $variant['value'] : (isset($variant['Value']) ? $variant['Value'] : null);
+                if ($has_attributes || $has_legacy_attribute) {
+                    // Delete old attributes and re-create them
+                    $this->product_model->delete_variant_attributes($variant_id);
                     
-                    // Only create attribute record if both name and value are not null
-                    if (!empty($attr_name) || $attr_name === '0') {
-                        if (!empty($attr_value) || $attr_value === '0') {
+                    // Handle attributes - new format with array of attributes
+                    if ($has_attributes) {
+                        foreach ($variant['attributes'] as $attr) {
+                            // Skip if name or value is null
+                            if (empty($attr['name']) && $attr['name'] !== '0') continue;
+                            if (empty($attr['value']) && $attr['value'] !== '0') continue;
+                            
                             $attr_data = [
                                 'variant_id' => $variant_id,
-                                'name' => $attr_name,
-                                'value' => $attr_value
+                                'name' => $attr['name'] ?? null,
+                                'value' => $attr['value'] ?? null
                             ];
                             $this->product_model->create_variant_attribute($attr_data);
+                        }
+                    }
+                    // Legacy single attribute support - only create if both name and value are provided
+                    elseif ($has_legacy_attribute) {
+                        // Get the attribute name and value
+                        $attr_name = isset($variant['attribute']) ? $variant['attribute'] : (isset($variant['Attribute']) ? $variant['Attribute'] : null);
+                        $attr_value = isset($variant['value']) ? $variant['value'] : (isset($variant['Value']) ? $variant['Value'] : null);
+                        
+                        // Only create attribute record if both name and value are not null
+                        if (!empty($attr_name) || $attr_name === '0') {
+                            if (!empty($attr_value) || $attr_value === '0') {
+                                $attr_data = [
+                                    'variant_id' => $variant_id,
+                                    'name' => $attr_name,
+                                    'value' => $attr_value
+                                ];
+                                $this->product_model->create_variant_attribute($attr_data);
+                            }
                         }
                     }
                 }
@@ -629,15 +635,17 @@ if (empty($data)) {
             return;
         }
 
-        // Delete product images
-       if (!empty($product['image']) && file_exists(FCPATH . $product['image'])) {
-    unlink(FCPATH . $product['image']);
-}
+        // Delete product image
+        if (!empty($product['image']) && file_exists(FCPATH . $product['image'])) {
+            unlink(FCPATH . $product['image']);
+        }
+        
+        // Delete additional product images
         if (!empty($product['images'])) {
             $images = json_decode($product['images'], true) ?: [];
             foreach ($images as $img) {
-                if (file_exists($img)) {
-                    unlink($img);
+                if (!empty($img) && file_exists(FCPATH . $img)) {
+                    unlink(FCPATH . $img);
                 }
             }
         }
@@ -645,8 +653,8 @@ if (empty($data)) {
         // Delete variant images
         $variants = $this->product_model->get_variants($id);
         foreach ($variants as $variant) {
-            if (!empty($variant['image']) && file_exists($variant['image'])) {
-                unlink($variant['image']);
+            if (!empty($variant['image']) && file_exists(FCPATH . $variant['image'])) {
+                unlink(FCPATH . $variant['image']);
             }
         }
 

@@ -208,6 +208,7 @@ class Product_model extends CI_Model {
         return $this->db->delete($this->variants_table);
     }
 
+  
     // Check if slug exists
     public function slug_exists($slug, $exclude_id = null) {
         $this->db->where('slug', $slug);
