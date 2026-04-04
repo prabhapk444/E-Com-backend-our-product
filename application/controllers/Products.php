@@ -499,42 +499,58 @@ if (empty($data)) {
         }
 
         if (!empty($data['variants']) && is_array($data['variants'])) {
-            // Get existing variants to preserve images
+            // Get existing variants to track which ones to delete
             $old_variants = $this->product_model->get_variants($id);
-            $old_variant_map = [];
-            foreach ($old_variants as $ov) {
-                $old_variant_map[$ov['id']] = $ov;
-            }
+            $old_variant_ids = array_column($old_variants, 'id');
+            $updated_variant_ids = [];
             
-          foreach ($data['variants'] as $index => $variant) {
-    $variant_image = null;
+            foreach ($data['variants'] as $index => $variant) {
+                $variant_image = null;
+                $is_existing = !empty($variant['id']);
+                
+                // Check if this is an existing variant
+                if ($is_existing) {
+                    $variant_id = $variant['id'];
+                    $updated_variant_ids[] = $variant_id;
+                    
+                    // Get existing variant to preserve image if not uploading new one
+                    $existing_variant = $this->product_model->get_variant_by_id($variant_id);
+                    $variant_image = $existing_variant['image'] ?? null;
+                }
 
-    // Check if this is an existing variant
-    if (!empty($variant['id']) && isset($old_variant_map[$variant['id']])) {
-        $variant_image = $old_variant_map[$variant['id']]['image']; // preserve old image
-    }
+                // Handle variant image upload
+                $variant_key = 'variant_image_' . $index;
 
-    $variant_key = 'variant_image_' . $index;
+                if (isset($_FILES[$variant_key]) && $_FILES[$variant_key]['error'] === UPLOAD_ERR_OK) {
+                    // Only delete the old image if a new one is uploaded
+                    if ($variant_image && file_exists(FCPATH . $variant_image)) {
+                        unlink(FCPATH . $variant_image);
+                    }
+                    $variant_image = $this->upload_image($variant_key, '');
+                }
 
-    if (isset($_FILES[$variant_key]) && $_FILES[$variant_key]['error'] === UPLOAD_ERR_OK) {
-        // Only delete the old image if a new one is uploaded
-        if ($variant_image && file_exists(FCPATH . $variant_image)) {
-            unlink(FCPATH . $variant_image);
-        }
-        $variant_image = $this->upload_image($variant_key, '');
-    }
                 $variant_data = [
-                    'product_id' => $id,
                     'sku' => $variant['sku'] ?? null,
                     'price' => $variant['price'] ?? 0,
                     'stock' => $variant['stock'] ?? 0,
                     'image' => $variant_image,
-                    'is_active' => $variant['is_active'] ?? $variant['is_active'] ?? '1',
-                    'created_by' => $user_id,
+                    'is_active' => $variant['is_active'] ?? $variant['isActive'] ?? '1',
                     'updated_by' => $user_id
                 ];
                 
-                $variant_id = $this->product_model->create_variant($variant_data);
+                if ($is_existing) {
+                    // Update existing variant
+                    $this->product_model->update_variant($variant_id, $variant_data);
+                } else {
+                    // Create new variant
+                    $variant_data['product_id'] = $id;
+                    $variant_data['created_by'] = $user_id;
+                    $variant_id = $this->product_model->create_variant($variant_data);
+                    $updated_variant_ids[] = $variant_id;
+                }
+                
+                // Delete old attributes and re-create them
+                $this->product_model->delete_variant_attributes($variant_id);
                 
                 // Handle attributes - new format with array of attributes
                 if (!empty($variant['attributes']) && is_array($variant['attributes'])) {
@@ -569,6 +585,22 @@ if (empty($data)) {
                         }
                     }
                 }
+            }
+            
+            // Delete variants that are no longer in the request
+            $variants_to_delete = array_diff($old_variant_ids, $updated_variant_ids);
+            foreach ($variants_to_delete as $old_variant_id) {
+                // Delete variant attributes first
+                $this->product_model->delete_variant_attributes($old_variant_id);
+                // Delete the variant
+                $this->product_model->delete_variant($old_variant_id);
+            }
+        } else {
+            // If no variants provided, delete all existing variants
+            $old_variants = $this->product_model->get_variants($id);
+            foreach ($old_variants as $old_variant) {
+                $this->product_model->delete_variant_attributes($old_variant['id']);
+                $this->product_model->delete_variant($old_variant['id']);
             }
         }
 
