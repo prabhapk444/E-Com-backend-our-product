@@ -136,8 +136,7 @@ class Order_model extends CI_Model {
         return $query->result_array();
     }
 
-    // Delete order (soft delete - just mark as cancelled)
-   public function cancel_order($id) {
+  public function cancel_order($id) {
     $items = $this->get_items($id);
 
     foreach ($items as $item) {
@@ -148,9 +147,9 @@ class Order_model extends CI_Model {
             $this->db->update('products');
         }
 
-        // Restore variant stock
+        // Restore variant stock (corrected column name)
         if (!empty($item['variant_id'])) {
-            $this->db->set('quantity', 'quantity + ' . (int)$item['quantity'], FALSE);
+            $this->db->set('stock', 'stock + ' . (int)$item['quantity'], FALSE); // <-- changed quantity -> stock
             $this->db->where('id', $item['variant_id']);
             $this->db->update('product_variants');
         }

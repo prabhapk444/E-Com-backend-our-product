@@ -580,53 +580,51 @@ class Orders extends CI_Controller {
         send_success($order, 'Order retrieved successfully');
     }
 
-    // Cancel order (by email - no user_id in table)
-    public function cancel($id) {
-        $user = $this->get_current_user();
-        
-        // Check if user is authenticated
-        if (!$user) {
-            send_error('Unauthorized', 401);
-            return;
-        }
-        
-        // Check if order exists
-        $order = $this->order_model->get_by_id($id);
-        
-        if (!$order) {
-            send_error('Order not found', 404);
-            return;
-        }
-
-        // Get user info
-        $user_email = isset($user->email) ? $user->email : null;
-        $user_role = isset($user->role) ? $user->role : (isset($user->role_id) ? $user->role_id : null);
-        
-        // Allow if user is owner (by email) OR admin (role 1 or 2)
-        $is_admin = ($user_role === '1' || $user_role === '2');
-        $is_owner = ($user_email && isset($order['email']) && strtolower($order['email']) === strtolower($user_email));
-        
-        if (!$is_admin && !$is_owner) {
-            send_error('Unauthorized to cancel this order', 403);
-            return;
-        }
-
-        // Check if order can be cancelled
-        if (in_array($order['status'], ['shipped', 'delivered', 'cancelled'])) {
-            send_error('Order cannot be cancelled in current status', 400);
-            return;
-        }
-
-        $result = $this->order_model->cancel_order($id);
-
-        if ($result) {
-            $order = $this->order_model->get_by_id($id);
-            send_success($order, 'Order cancelled successfully');
-        } else {
-            send_error('Failed to cancel order', 500);
-        }
+public function cancel($order_identifier) {
+    $user = $this->get_current_user();
+    if (!$user) {
+        send_error('Unauthorized', 401);
+        return;
     }
 
+    // Detect numeric vs string ID
+    if (is_numeric($order_identifier)) {
+        $order = $this->order_model->get_by_id($order_identifier);
+    } else {
+        $order = $this->order_model->get_by_order_id($order_identifier);
+    }
+
+    if (!$order) {
+        send_error('Order not found', 404);
+        return;
+    }
+
+    // Authorization logic (owner or admin)
+    $user_email = $user->email ?? null;
+    $user_role = $user->role ?? ($user->role_id ?? null);
+
+    $is_admin = in_array($user_role, ['1','2']);
+    $is_owner = $user_email && strtolower($order['email']) === strtolower($user_email);
+
+    if (!$is_admin && !$is_owner) {
+        send_error('Unauthorized to cancel this order', 403);
+        return;
+    }
+
+    if (in_array($order['status'], ['shipped','delivered','cancelled'])) {
+        send_error('Order cannot be cancelled in current status', 400);
+        return;
+    }
+
+    $result = $this->order_model->cancel_order($order['id']); // note: use numeric id
+
+    if ($result) {
+        $order = $this->order_model->get_by_id($order['id']);
+        send_success($order, 'Order cancelled successfully');
+    } else {
+        send_error('Failed to cancel order', 500);
+    }
+}
     // Get sales statistics (admin - role 1 or 2)
     public function stats() {
         $permission = $this->has_permission('1');
