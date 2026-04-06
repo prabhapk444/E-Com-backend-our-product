@@ -63,14 +63,22 @@ function bad_request($msg) {
     echo json_encode(['status' => false, 'message' => $msg]);
     exit;
 }
-function unauthorized($msg) {
-    echo json_encode(['status' => false, 'message' => $msg]);
+function unauthorized($msg = "Unauthorized") {
+    header('Content-Type: application/json');
     http_response_code(401);
+    echo json_encode([
+        'status' => false,
+        'message' => $msg
+    ]);
     exit;
 }
 function forbidden($msg) {
-    echo json_encode(['status' => false, 'message' => $msg]);
+    header('Content-Type: application/json');
     http_response_code(403);
+    echo json_encode([
+        'status' => false,
+        'message' => $msg
+    ]);
     exit;
 }
 function conflict($msg) {

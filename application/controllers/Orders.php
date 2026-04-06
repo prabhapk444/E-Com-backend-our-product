@@ -450,58 +450,65 @@ class Orders extends CI_Controller {
         send_success($orders, 'Recent orders retrieved successfully');
     }
 
-    // Update order status (admin - role 1, 2, or 3)
-    public function update_status($id) {
-        $permission = $this->has_permission('1');
-        
-        // If not super admin, check for admin role
+   
+   public function update_status($id) {
+    $permission = $this->has_permission('1');
+
+    if (!$permission['valid']) {
+        $permission = $this->has_permission('2');
         if (!$permission['valid']) {
-            $permission = $this->has_permission('2');
-            // If not admin, check for manager/vendor role
+            $permission = $this->has_permission('3');
             if (!$permission['valid']) {
-                $permission = $this->has_permission('3');
-                if (!$permission['valid']) {
-                    send_error($permission['message'], 403);
-                    return;
-                }
+                send_error($permission['message'], 403);
+                return;
             }
         }
-
-        // Get JSON input
-        $json = file_get_contents('php://input');
-        $data = json_decode($json, true);
-
-        if (!$data) {
-            $data = $_POST;
-        }
-
-        $status = isset($data['status']) ? $data['status'] : null;
-
-        if (!$status) {
-            send_error('Status is required', 400);
-            return;
-        }
-
-        // Validate status
-        $valid_statuses = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'];
-        
-        if (!in_array($status, $valid_statuses)) {
-            send_error('Invalid status', 400);
-            return;
-        }
-
-        $user = $permission['user'];
-        $updated_by = isset($user->id) ? $user->id : null;
-
-        $result = $this->order_model->update_status($id, $status, $updated_by);
-
-        if ($result) {
-            $order = $this->order_model->get_by_id($id);
-            send_success($order, 'Order status updated successfully');
-        } else {
-            send_error('Failed to update order status', 500);
-        }
     }
+
+    // Get current order
+    $order = $this->order_model->get_by_id($id);
+    if (!$order) {
+        send_error('Order not found', 404);
+        return;
+    }
+
+    // Prevent updates if order is already delivered
+    if ($order->status === 'delivered') {
+        send_error('Delivered orders cannot be updated', 403);
+        return;
+    }
+
+    // Get JSON input
+    $json = file_get_contents('php://input');
+    $data = json_decode($json, true);
+    if (!$data) $data = $_POST;
+
+    $status = isset($data['status']) ? $data['status'] : null;
+
+    if (!$status) {
+        send_error('Status is required', 400);
+        return;
+    }
+
+    // Validate status
+    $valid_statuses = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'];
+    if (!in_array($status, $valid_statuses)) {
+        send_error('Invalid status', 400);
+        return;
+    }
+
+    $user = $permission['user'];
+    $updated_by = isset($user->id) ? $user->id : null;
+
+    $result = $this->order_model->update_status($id, $status, $updated_by);
+
+    if ($result) {
+        $order = $this->order_model->get_by_id($id);
+        send_success($order, 'Order status updated successfully');
+    } else {
+        send_error('Failed to update order status', 500);
+    }
+}
 
     // Update payment status
     public function update_payment($id) {
