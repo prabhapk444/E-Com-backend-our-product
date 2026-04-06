@@ -14,31 +14,42 @@ class Order_model extends CI_Model {
         return 'ORD-' . strtoupper(uniqid());
     }
 
-    // Create new order with items
-    public function create_order($order_data, $items) {
-        // Start transaction
-        $this->db->trans_start();
+  public function create_order($order_data, $items) {
 
-        // Insert order
-        $this->db->insert($this->table, $order_data);
-        $order_id = $this->db->insert_id();
+    $this->db->trans_start();
 
-        // Insert order items
-        foreach ($items as $item) {
-            $item['order_id'] = $order_id;
-            $this->db->insert($this->items_table, $item);
+    $this->db->insert($this->table, $order_data);
+    $order_id = $this->db->insert_id();
+    foreach ($items as $item) {
+        $item['order_id'] = $order_id;
+        $this->db->insert($this->items_table, $item);
+        if (!empty($item['product_id'])) {
+            $product = $this->db->select('quantity')->where('id', $item['product_id'])->get('products')->row();
+            $new_qty = max(0, $product->quantity - (int)$item['quantity']); 
+            $this->db->set('quantity', $new_qty);
+            $this->db->where('id', $item['product_id']);
+            $this->db->update('products');
         }
 
-        // Complete transaction
-        $this->db->trans_complete();
 
-        if ($this->db->trans_status() === FALSE) {
-            return false;
+        if (!empty($item['variant_id'])) {
+ 
+            $variant = $this->db->select('stock')->where('id', $item['variant_id'])->get('product_variants')->row();
+            $new_stock = max(0, $variant->stock - (int)$item['quantity']); 
+            $this->db->set('stock', $new_stock);
+            $this->db->where('id', $item['variant_id']);
+            $this->db->update('product_variants');
         }
-
-        return $order_id;
     }
 
+    $this->db->trans_complete();
+
+    if ($this->db->trans_status() === FALSE) {
+        return false;
+    }
+
+    return $order_id;
+}
     // Get order by ID
     public function get_by_id($id) {
         $this->db->select('o.*');
@@ -126,10 +137,28 @@ class Order_model extends CI_Model {
     }
 
     // Delete order (soft delete - just mark as cancelled)
-    public function cancel_order($id) {
-        $this->db->where('id', $id);
-        return $this->db->update($this->table, ['status' => 'cancelled']);
+   public function cancel_order($id) {
+    $items = $this->get_items($id);
+
+    foreach ($items as $item) {
+        // Restore product stock
+        if (!empty($item['product_id'])) {
+            $this->db->set('quantity', 'quantity + ' . (int)$item['quantity'], FALSE);
+            $this->db->where('id', $item['product_id']);
+            $this->db->update('products');
+        }
+
+        // Restore variant stock
+        if (!empty($item['variant_id'])) {
+            $this->db->set('quantity', 'quantity + ' . (int)$item['quantity'], FALSE);
+            $this->db->where('id', $item['variant_id']);
+            $this->db->update('product_variants');
+        }
     }
+
+    $this->db->where('id', $id);
+    return $this->db->update($this->table, ['status' => 'cancelled']);
+}
 
     // Get orders by user ID
     public function get_by_user($user_id, $limit = 10, $offset = 0) {

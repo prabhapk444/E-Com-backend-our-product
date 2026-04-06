@@ -75,6 +75,13 @@ $route['superadmin/stats'] = 'superadmin/get_stats';
 $route['api/users'] = 'auth/get_users';
 
 
+$route['api/dashboard/stats'] = 'dashboard/stats';
+$route['api/dashboard/orders'] = 'dashboard/orders';
+$route['api/dashboard/order-status'] = 'dashboard/order_status';
+$route['api/dashboard/monthly-sales'] = 'dashboard/monthly_sales';
+$route['api/dashboard/low-stock'] = 'dashboard/low_stock';
+
+
 
 
 $route['api/feedback/submit'] = 'feedback/submit';
