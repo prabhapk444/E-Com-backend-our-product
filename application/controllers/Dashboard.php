@@ -86,5 +86,24 @@ public function low_stock() {
             "data" => $data
         ]));
 }
+ public function get_monthly_sales_data() {
+    $this->verify_admin();
+    $data = $this->Dashboard_model->get_monthly_sales_with_orders();
+
+    // Calculate total orders and total revenue
+    $totalRevenue = array_sum(array_column($data, 'revenue'));
+    $totalOrders = array_sum(array_column($data, 'orders'));
+    $avgOrderValue = $totalOrders ? round($totalRevenue / $totalOrders, 2) : 0;
+
+    $this->output
+        ->set_content_type('application/json')
+        ->set_output(json_encode([
+            'status' => true,
+            'data' => $data,
+            'totalRevenue' => $totalRevenue,
+            'totalOrders' => $totalOrders,
+            'avgOrderValue' => $avgOrderValue
+        ]));
+}
 
 }

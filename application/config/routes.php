@@ -80,6 +80,7 @@ $route['api/dashboard/orders'] = 'dashboard/orders';
 $route['api/dashboard/order-status'] = 'dashboard/order_status';
 $route['api/dashboard/monthly-sales'] = 'dashboard/monthly_sales';
 $route['api/dashboard/low-stock'] = 'dashboard/low_stock';
+$route['api/dashboard/monthly-sales'] = 'dashboard/get_monthly_sales_data';
 
 
 
@@ -155,6 +156,7 @@ $route['api/admin/orders/payment/(:num)'] = 'orders/update_payment/$1';
 $route['api/admin/orders/status/(:any)'] = 'orders/by_status/$1';
 $route['api/admin/orders/(:num)'] = 'orders/get_admin/$1';
 $route['api/admin/orders/stats'] = 'orders/stats';
+
 
 
 

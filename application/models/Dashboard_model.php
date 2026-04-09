@@ -47,8 +47,9 @@ class Dashboard_model extends CI_Model {
         return $this->db->count_all_results('users');
     }
 
-   public function get_total_revenue() {
+  public function get_total_revenue() {
     $this->db->select_sum('total');
+    $this->db->where('status !=', 'cancelled'); 
     $query = $this->db->get('orders');
 
     return (float) ($query->row()->total ?? 0);
@@ -59,10 +60,11 @@ public function get_recent_orders() {
         id,
         order_id as orderNumber,
         name as customerName,
-        total as total
+        total as total,
+        created_at
     ');
     $this->db->from('orders');
-    $this->db->order_by('id', 'DESC');
+    $this->db->order_by('created_at', 'DESC'); 
     $this->db->limit(5);
 
     return $this->db->get()->result();
@@ -81,7 +83,8 @@ public function get_order_status() {
         'delivered' => '#10b981',
         'processing' => '#f59e0b',
         'shipped' => '#3b82f6',
-        'pending' => '#ef4444'
+        'pending' => '#ef4444',
+         'cancelled'  => '#9ca3af',
     ];
 
     foreach ($query->result() as $row) {
@@ -101,6 +104,7 @@ public function get_monthly_sales() {
             DATE_FORMAT(created_at, '%b') as month,
             SUM(total) as revenue
         FROM orders
+        WHERE status != 'cancelled'
         GROUP BY YEAR(created_at), MONTH(created_at)
         ORDER BY YEAR(created_at), MONTH(created_at)
     ");
@@ -131,6 +135,30 @@ $this->db->order_by('stock', 'ASC');
 $this->db->limit($limit);
 
 return $this->db->get()->result();
+}
+
+public function get_monthly_sales_with_orders() {
+    $query = $this->db->query("
+        SELECT 
+            DATE_FORMAT(created_at, '%b') as month,
+            SUM(total) as revenue,
+            COUNT(*) as orders
+        FROM orders
+        WHERE status != 'cancelled'
+        GROUP BY YEAR(created_at), MONTH(created_at)
+        ORDER BY YEAR(created_at), MONTH(created_at)
+    ");
+
+    $data = [];
+    foreach ($query->result() as $row) {
+        $data[] = [
+            'month' => $row->month,
+            'revenue' => (float)$row->revenue,
+            'orders' => (int)$row->orders,
+        ];
+    }
+
+    return $data;
 }
 
 
