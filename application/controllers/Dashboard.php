@@ -9,23 +9,20 @@ class Dashboard extends CI_Controller {
         $this->load->model('Jwt_model');
     }
 
-
-private function verify_admin() {
+      private function check_role($allowed_roles = []) {
     $user = $this->Jwt_model->verify_token();
+    if (!$user) return null;
 
-    if (!$user) {
-        unauthorized("Token invalid or missing");
-    }
-
-    if (!in_array((int)$user->role, [1,2])) {
-        forbidden("Only admin allowed");
-    }
+    if (!in_array((int)$user->role, $allowed_roles, true)) return false;
 
     return $user;
 }
 
+
   public function stats() {
-    $this->verify_admin();
+  $user = $this->check_role([2]);
+        if (!$user) return unauthorized("Access denied");
+
 
     $data = [
         "totalRevenue" => (int)$this->Dashboard_model->get_total_revenue(),
@@ -44,7 +41,9 @@ private function verify_admin() {
 }
 
 public function orders() {
-    $this->verify_admin();
+    $user = $this->check_role([2]);
+        if (!$user) return unauthorized("Access denied");
+
 
     $data = $this->Dashboard_model->get_recent_orders();
 
@@ -54,7 +53,9 @@ public function orders() {
 }
 
 public function order_status() {
-    $this->verify_admin();
+   $user = $this->check_role([2]);
+        if (!$user) return unauthorized("Access denied");
+
 
     $data = $this->Dashboard_model->get_order_status();
 
@@ -64,7 +65,9 @@ public function order_status() {
 }
 
 public function monthly_sales() {
-    $this->verify_admin();
+    $user = $this->check_role([2]);
+        if (!$user) return unauthorized("Access denied");
+
 
     $data = $this->Dashboard_model->get_monthly_sales();
 
@@ -75,7 +78,9 @@ public function monthly_sales() {
 
 
 public function low_stock() {
-    $this->verify_admin();
+
+  $user = $this->check_role([2]);
+        if (!$user) return unauthorized("Access denied");
 
     $data = $this->Dashboard_model->get_low_stock_products();
 
@@ -87,7 +92,9 @@ public function low_stock() {
         ]));
 }
  public function get_monthly_sales_data() {
-    $this->verify_admin();
+    $user = $this->check_role([2]);
+        if (!$user) return unauthorized("Access denied");
+
     $data = $this->Dashboard_model->get_monthly_sales_with_orders();
 
     // Calculate total orders and total revenue

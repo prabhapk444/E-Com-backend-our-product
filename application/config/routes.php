@@ -73,6 +73,8 @@ $route['api/user/toggle/(:num)'] = 'auth/toggle_user_status/$1';
 $route['superadmin/admins'] = 'superadmin/get_admins';
 $route['superadmin/stats'] = 'superadmin/get_stats';
 $route['api/users'] = 'auth/get_users';
+$route['auth/admin-forgot-password']['post'] = 'auth/admin_forgot_password';
+$route['auth/admin-reset-password']['post'] = 'auth/admin_reset_password';
 
 
 $route['api/dashboard/stats'] = 'dashboard/stats';
@@ -174,3 +176,8 @@ $route['reviews/delete/(:num)'] = 'reviews/delete/$1';
 // settings endpoints
 $route['settings'] = 'settings/get';
 $route['settings/save'] = 'settings/save';
+
+
+$route['dashboard/monthly-sales'] = 'reports/monthly_sales';
+$route['dashboard/order-status'] = 'reports/order_status';
+$route['dashboard/top-products'] = 'reports/top_products';
