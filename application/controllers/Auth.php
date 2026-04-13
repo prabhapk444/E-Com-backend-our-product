@@ -257,11 +257,21 @@ public function google_login() {
     ]);
 }
 
-   public function forgot_password() {
+  public function forgot_password() {
     $input = json_decode(file_get_contents("php://input"), true);
+
+    if (empty($input['email'])) {
+        return error_response("Email is required");
+    }
+
 
     $user = $this->User_model->get_by_email($input['email']);
     if (!$user) return not_found("User not found");
+
+
+    if (intval($user->role) !== 3) {
+        return unauthorized("Only users allowed");
+    }
 
 
     $otp = rand(100000, 999999);
@@ -274,7 +284,7 @@ public function google_login() {
         'expires_at' => $expires
     ]);
 
-  
+
     $this->email_library->send_otp_email($user->email, $otp);
 
     return success_response("OTP sent to email");
@@ -337,7 +347,7 @@ public function save_admin() {
         $data = [
             'name' => $input['name'],
             'email' => $input['email'],
-            'phonenumber' => $input['phone'] ?? null,
+            'phonenumber' => $input['phonenumber'] ?? null,
             'place' => $input['place'] ?? null,
         ];
         if (!empty($input['password'])) {
@@ -353,6 +363,7 @@ public function save_admin() {
             'email' => $input['email'],
             'password' => password_hash($input['password'], PASSWORD_BCRYPT),
             'place' => $input['place'] ?? null,
+            'phonenumber' => $input['phonenumber'] ?? null,
             'role' => 2,
             'createdat' => date('Y-m-d'),
         ];
@@ -439,5 +450,89 @@ public function toggle_user_status($id)
         return error_response("Failed to update");
     }
 }
+
+public function get_profile() {
+    $user = $this->Jwt_model->verify_token();
+    if (!$user) return unauthorized("Invalid token");
+
+    $data = $this->User_model->get_by_id($user->uid);
+
+    return success_response("Profile fetched", $data);
+}
+
+public function change_password() {
+    $user = $this->Jwt_model->verify_token();
+    if (!$user) return unauthorized("Invalid token");
+
+    $input = json_decode(file_get_contents("php://input"), true);
+
+    if (empty($input['newPassword'])) {
+        return error_response("Password required");
+    }
+
+    $hashed = password_hash($input['newPassword'], PASSWORD_BCRYPT);
+
+    $this->User_model->update_password($user->uid, $hashed);
+
+    return success_response("Password updated");
+}
+
+public function admin_forgot_password() {
+    $input = json_decode(file_get_contents("php://input"), true);
+
+    if (empty($input['email'])) {
+        return error_response("Email is required");
+    }
+
+    $user = $this->User_model->get_by_email($input['email']);
+    if (!$user) return not_found("Admin not found");
+
+
+    if (intval($user->role) !== 2) {
+        return unauthorized("Not an admin account");
+    }
+
+    $otp = rand(100000, 999999);
+    $expires = date('Y-m-d H:i:s', strtotime('+5 minutes'));
+
+    $this->User_model->save_reset_token([
+        'user_id' => $user->id,
+        'token' => $otp,
+        'expires_at' => $expires
+    ]);
+
+    $this->email_library->send_otp_email($user->email, $otp);
+
+    return success_response("OTP sent to admin email");
+}
+
+public function admin_reset_password() {
+    $input = json_decode(file_get_contents("php://input"), true);
+
+    if (empty($input['otp']) || empty($input['password'])) {
+        return error_response("OTP and password required");
+    }
+
+    $tokenData = $this->User_model->get_valid_token($input['otp']);
+
+    if (!$tokenData) {
+        return error_response("Invalid or expired OTP");
+    }
+
+
+    $user = $this->User_model->get_by_id($tokenData->user_id);
+
+    if (!$user || intval($user->role) !== 2) {
+        return unauthorized("Not an admin account");
+    }
+
+    $password = password_hash($input['password'], PASSWORD_BCRYPT);
+
+    $this->User_model->update_password($user->id, $password);
+    $this->User_model->mark_token_used($input['otp']);
+
+    return success_response("Admin password reset successful");
+}
+
 
 }
