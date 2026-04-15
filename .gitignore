@@ -36,3 +36,4 @@ goauth_credentials.json
 goauth_credentials.json
 GOOGLE_CLIENT_ID
 GOOGLE_CLIENT_SECRET
+client_secret_*.json
