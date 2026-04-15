@@ -34,3 +34,5 @@ goauth_credentials.json
 /tests/tests/
 /tests/results/
 goauth_credentials.json
+GOOGLE_CLIENT_ID
+GOOGLE_CLIENT_SECRET
