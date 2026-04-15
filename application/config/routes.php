@@ -182,6 +182,7 @@ $route['reviews/delete/(:num)'] = 'reviews/delete/$1';
 
 // settings endpoints
 $route['settings'] = 'settings/index';
+$route['user/settings'] = 'settings/user_index';
 $route['settings/save'] = 'settings/save';
 
 $route['dashboard/monthly-sales'] = 'reports/monthly_sales';

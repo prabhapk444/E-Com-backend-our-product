@@ -49,7 +49,7 @@ private function uploadImage($field, $name) {
 
     if (!$user) return unauthorized("Unauthorized");
 
-    if (!in_array((int)$user->role, [2, 3], true)) {
+    if (!in_array((int)$user->role, [2], true)) {
     return unauthorized("Access denied");
 }
 
@@ -119,4 +119,15 @@ if (!empty($_FILES['hero_image']['name'])) {
 
     return success_response("Settings saved", $data);
 }
+
+
+  public function user_index() {
+   
+
+    $data = $this->Settings_model->get();
+
+    return success_response("Settings fetched", $data);
+}
+
+
 }
