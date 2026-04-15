@@ -40,7 +40,7 @@ if (!function_exists('set_auth_cookie')) {
             'domain' => $domain,
             'secure' => $secure,
             'httponly' => TRUE,
-            'samesite' => 'Strict'
+          'samesite' => 'Lax'
         ];
         
         return setcookie('auth_token', $token, $options);
@@ -67,39 +67,73 @@ if (!function_exists('delete_auth_cookie')) {
     }
 }
 
-if (!function_exists('set_csrf_cookie')) {
-    function set_csrf_cookie() {
+if (!function_exists('generate_csrf_token')) {
+    function generate_csrf_token() {
         $token = bin2hex(random_bytes(32));
         $_SESSION['csrf_token'] = $token;
-        
-        $secure = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
-        
-        $options = [
-            'expires' => 0,
-            'path' => '/',
-            'domain' => '',
-            'secure' => $secure,
-            'httponly' => TRUE,
-            'samesite' => 'Strict'
-        ];
-        
-        setcookie('csrf_token', $token, $options);
+        $_SESSION['csrf_token_time'] = time();
         return $token;
+    }
+}
+
+if (!function_exists('set_csrf_cookie')) {
+    function set_csrf_cookie($regenerate = FALSE) {
+        $existing = $_SESSION['csrf_token'] ?? null;
+        
+        if (!$existing || $regenerate) {
+            return generate_csrf_token();
+        }
+        
+        $tokenAge = time() - ($_SESSION['csrf_token_time'] ?? 0);
+        if ($tokenAge > 7200) {
+            return generate_csrf_token();
+        }
+        
+        return $existing;
     }
 }
 
 if (!function_exists('get_csrf_token')) {
     function get_csrf_token() {
-        return $_SESSION['csrf_token'] ?? ($_COOKIE['csrf_token'] ?? null);
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+        
+        if (!isset($_SESSION['csrf_token'])) {
+            return generate_csrf_token();
+        }
+        
+        return $_SESSION['csrf_token'];
+    }
+}
+
+if (!function_exists('get_csrf_token_header')) {
+    function get_csrf_token_header() {
+        $token = get_csrf_token();
+        return $token;
     }
 }
 
 if (!function_exists('verify_csrf_token')) {
     function verify_csrf_token($token) {
-        $stored = $_SESSION['csrf_token'] ?? ($_COOKIE['csrf_token'] ?? null);
-        if (!$stored || !$token) {
-            return false;
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
         }
-        return hash_equals($stored, $token);
+        
+        $stored = $_SESSION['csrf_token'] ?? null;
+        if (!$stored || !$token) {
+            return FALSE;
+        }
+        
+        if (!hash_equals($stored, $token)) {
+            return FALSE;
+        }
+        
+        $tokenTime = $_SESSION['csrf_token_time'] ?? 0;
+        if (time() - $tokenTime > 7200) {
+            return FALSE;
+        }
+        
+        return TRUE;
     }
 }

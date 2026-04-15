@@ -81,9 +81,12 @@ class Auth extends CI_Controller {
         'role' => intval($user->role)
     ]);
 
+    $csrf_token = get_csrf_token();
+
     return success_response("Login successful", [
         'token' => $token,
-        'user' => $user
+        'user' => $user,
+        'csrf_token' => $csrf_token
     ]);
 }
 
@@ -119,9 +122,12 @@ class Auth extends CI_Controller {
         'role' => intval($user->role)
     ]);
 
+    $csrf_token = get_csrf_token();
+
     return success_response("Superadmin login success", [
         'token' => $token,
-        'user' => $user
+        'user' => $user,
+        'csrf_token' => $csrf_token
     ]);
 }
 
@@ -155,9 +161,12 @@ class Auth extends CI_Controller {
         'role' => intval($user->role)
     ]);
 
+    $csrf_token = get_csrf_token();
+
     return success_response("Admin login successful", [
         'token' => $token,
-        'user' => $user
+        'user' => $user,
+        'csrf_token' => $csrf_token
     ]);
 }
 
@@ -254,9 +263,12 @@ public function google_login() {
         'role'  => intval($user->role)
     ]);
 
+    $csrf_token = get_csrf_token();
+
     return success_response("Google login success", [
         'token' => $jwt,
-        'user'  => $user
+        'user'  => $user,
+        'csrf_token' => $csrf_token
     ]);
 }
 

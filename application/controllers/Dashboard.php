@@ -82,7 +82,7 @@ public function low_stock() {
   $user = $this->check_role([2]);
         if (!$user) return unauthorized("Access denied");
 
-    $threshold = $this->input->get('threshold') ?? 5;
+   $threshold = $this->input->get('threshold') ?? 5;
     $data = $this->Dashboard_model->get_low_stock_products(10, $threshold);
 
     return $this->output

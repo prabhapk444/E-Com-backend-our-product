@@ -9,6 +9,9 @@ class Settings extends CI_Controller {
         $this->load->helper('response');
     }
 
+
+    
+
   public function save() {
     $user = $this->Jwt_model->verify_token();
 

@@ -25,7 +25,8 @@ defined('ADMIN_EMAIL')      or define('ADMIN_EMAIL', (ENVIRONMENT !== 'productio
 
 define('JWT_SECRET', (ENVIRONMENT !== 'production')?"NEM2fCssSCnN20TTY8rthWvHNDOcjVHwVO+XXkBCgN2K0CMk9rXB6rvRwbN/u6ZmfHFf91IYajAtVLQKRSbKgQ==" :"NEM2fCssSCnN20TTY8rthWvHNDOcjVHwVO+XXkBCgN2K0CMk9rXB6rvRwbN/u6ZmfHFf91IYajAtVLQKRSbKgQ==");
 define('JWT_ALGORITHM',(ENVIRONMENT !== 'production')? "HS256" : "HS256");
-define('JWT_EXPIRATION', (ENVIRONMENT !== 'production') ?"7200":"7200");
+define('JWT_EXPIRATION', (ENVIRONMENT !== 'production') ? 7200 : 3600);
+define('JWT_REFRESH_EXPIRATION', 604800);
 
 
 

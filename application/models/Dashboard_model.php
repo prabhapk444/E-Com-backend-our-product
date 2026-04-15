@@ -113,28 +113,31 @@ public function get_monthly_sales() {
 }
 
 public function get_low_stock_products($limit = 10, $threshold = 5) {
-   $this->db->select('
-    p.id as product_id,
-    p.name as product_name,
-    pv.id as variant_id,
-    COALESCE(pv.stock, p.quantity) as stock,
-    GROUP_CONCAT(CONCAT(va.name, ": ", va.value) SEPARATOR ", ") as variant_attributes
-  ');
-  $this->db->from('products p');
-  $this->db->join('product_variants pv', 'pv.product_id = p.id', 'left');
-  $this->db->join('variant_attributes va', 'va.variant_id = pv.id', 'left');
+    $this->db->select("
+        p.id as product_id,
+        p.name as product_name,
+        pv.id as variant_id,
+        CASE 
+            WHEN pv.id IS NOT NULL THEN pv.stock
+            ELSE p.quantity
+        END as stock,
+        GROUP_CONCAT(CONCAT(va.name, ': ', va.value) SEPARATOR ', ') as variant_attributes
+    ", FALSE);
 
-  // Low stock condition with dynamic threshold
-  $this->db->group_start();
-      $this->db->where('pv.stock <=', $threshold);
-      $this->db->or_where('p.quantity <=', $threshold);
-  $this->db->group_end();
+    $this->db->from('products p');
+    $this->db->join('product_variants pv', 'pv.product_id = p.id', 'left');
+    $this->db->join('variant_attributes va', 'va.variant_id = pv.id', 'left');
 
-  $this->db->group_by('pv.id'); // Needed for GROUP_CONCAT
-  $this->db->order_by('stock', 'ASC');
-  $this->db->limit($limit);
+    $this->db->group_start();
+        $this->db->where("pv.id IS NOT NULL AND pv.stock <=", (int)$threshold, FALSE);
+        $this->db->or_where("pv.id IS NULL AND p.quantity <=", (int)$threshold, FALSE);
+    $this->db->group_end();
 
-  return $this->db->get()->result();
+    $this->db->group_by(['p.id', 'pv.id']);
+    $this->db->order_by('stock', 'ASC');
+    $this->db->limit($limit);
+
+    return $this->db->get()->result();
 }
 
 public function get_top_products($limit = 5) {
@@ -156,13 +159,11 @@ public function get_top_products($limit = 5) {
 }
 
 public function get_settings() {
-  // Get low stock threshold from settings table
-  $this->db->where('key', 'low_stock_threshold');
-  $query = $this->db->get('settings')->row();
-  
-  return [
-    'low_stock_threshold' => $query ? $query->value : 5
-  ];
+    $query = $this->db->get('settings')->row();
+
+    return [
+        'low_stock_threshold' => $query ? (int)$query->low_stock_threshold : 5
+    ];
 }
 
 public function get_monthly_sales_with_orders() {
