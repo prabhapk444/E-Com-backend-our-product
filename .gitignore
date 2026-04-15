@@ -33,3 +33,4 @@ goauth_credentials.json
 *.sublime-project
 /tests/tests/
 /tests/results/
+goauth_credentials.json
