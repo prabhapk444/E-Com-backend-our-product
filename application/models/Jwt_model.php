@@ -5,17 +5,62 @@ require_once FCPATH . 'vendor/autoload.php';
 
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
+use Firebase\JWT\ExpiredException;
+use Firebase\JWT\SignatureInvalidException;
 
 class Jwt_model extends CI_Model {
     private $secret_key;
     private $algorithm;
     private $expiration;
+    private $cookie_name = 'auth_token';
     
     public function __construct() {
         parent::__construct();
         $this->secret_key  = JWT_SECRET;
         $this->algorithm   = JWT_ALGORITHM;
         $this->expiration  = JWT_EXPIRATION;
+    }
+
+    public function set_cookie($token, $expiry = NULL) {
+        $this->load->helper('cookie');
+        
+        if ($expiry === NULL) {
+            $expiry = $this->expiration;
+        }
+        
+        $domain = $_SERVER['HTTP_HOST'] ?? '';
+        if (strpos($domain, 'localhost') !== false || strpos($domain, '127.0.0.1') !== false) {
+            $domain = '';
+        } else {
+            $domain = '.' . ltrim($domain, 'www.');
+        }
+        
+        $secure = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
+        
+        $config = [
+            'name' => $this->cookie_name,
+            'value' => $token,
+            'expire' => $expiry,
+            'path' => '/',
+            'domain' => $domain,
+            'secure' => $secure,
+            'httponly' => TRUE,
+            'samesite' => 'Strict'
+        ];
+        
+        return set_cookie($config);
+    }
+
+    public function get_cookie() {
+        return get_cookie($this->cookie_name, TRUE);
+    }
+
+    public function delete_cookie() {
+        delete_cookie($this->cookie_name);
+    }
+
+    public function get_token_from_cookie() {
+        return $this->get_cookie();
     }
 
     // Encode token
@@ -31,18 +76,28 @@ class Jwt_model extends CI_Model {
         $decoded = JWT::decode($token, new Key($this->secret_key, $this->algorithm));
         log_message('info', 'Jwt_model::decode() - success');
         return $decoded;
+    } catch (ExpiredException $e) {
+        log_message('error', 'JWT Error: Token expired');
+        // Return special object with expired flag
+        return (object)['expired' => true, 'message' => 'Token has expired'];
+    } catch (SignatureInvalidException $e) {
+        log_message('error', 'JWT Error: Invalid signature');
+        return (object)['invalid' => true, 'message' => 'Invalid token signature'];
     } catch (Exception $e) {
         log_message('error', 'JWT Decode Error: ' . $e->getMessage());
         return null;
     }
-}
-
+  }
+    
 
 
     // Verify token
    public function verify_token($token = null) {
     if (empty($token)) {
         $token = $this->get_token_from_header();
+        if (empty($token)) {
+            $token = $this->get_token_from_cookie();
+        }
     }
 
     if (empty($token)) {
@@ -112,13 +167,17 @@ public function get_token_from_header() {
 
 
     
-    public function get_authenticated_user() {
+public function get_authenticated_user() {
     $token = $this->get_token_from_header();
+    if (!$token) {
+        $token = $this->get_token_from_cookie();
+    }
     if (!$token) {
         return false;
     }
     return $this->decode($token);
 }
+
 
 
 }

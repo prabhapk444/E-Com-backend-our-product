@@ -31,8 +31,9 @@ class Cors {
     }
 
     header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE");
-    header("Access-Control-Allow-Headers: Origin, Content-Type, X-Requested-With, Authorization, Accept");
+    header("Access-Control-Allow-Headers: Origin, Content-Type, X-Requested-With, Authorization, Accept, X-CSRF-TOKEN");
     header("Access-Control-Allow-Credentials: true");
+    header("Access-Control-Expose-Headers: Authorization, X-CSRF-TOKEN");
 
     if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
         http_response_code(200);

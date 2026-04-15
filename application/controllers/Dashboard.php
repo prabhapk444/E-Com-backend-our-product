@@ -82,7 +82,8 @@ public function low_stock() {
   $user = $this->check_role([2]);
         if (!$user) return unauthorized("Access denied");
 
-    $data = $this->Dashboard_model->get_low_stock_products();
+    $threshold = $this->input->get('threshold') ?? 5;
+    $data = $this->Dashboard_model->get_low_stock_products(10, $threshold);
 
     return $this->output
         ->set_content_type('application/json')
@@ -91,6 +92,29 @@ public function low_stock() {
             "data" => $data
         ]));
 }
+
+public function top_products() {
+    $user = $this->check_role([2]);
+    if (!$user) return unauthorized("Access denied");
+
+    $data = $this->Dashboard_model->get_top_products();
+
+    return $this->output
+        ->set_content_type('application/json')
+        ->set_output(json_encode(["status" => true, "data" => $data]));
+}
+
+public function settings() {
+    $user = $this->check_role([2]);
+    if (!$user) return unauthorized("Access denied");
+
+    $data = $this->Dashboard_model->get_settings();
+
+    return $this->output
+        ->set_content_type('application/json')
+        ->set_output(json_encode(["status" => true, "data" => $data]));
+}
+
  public function get_monthly_sales_data() {
     $user = $this->check_role([2]);
         if (!$user) return unauthorized("Access denied");
