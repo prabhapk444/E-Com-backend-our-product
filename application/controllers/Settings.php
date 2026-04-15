@@ -77,7 +77,14 @@ private function uploadImage($field, $name) {
         'place' => $post['place'],
         'store_hours' => $post['store_hours'],
         'store_closed' => $post['store_closed'],
-      'low_stock_threshold' => $post['low_stock_threshold'],
+        'low_stock_threshold' => $post['low_stock_threshold'],
+        'our_story' => $this->input->post('our_story', false),  
+        'our_mission' => $this->input->post('our_mission', false),
+        'our_vision' => $this->input->post('our_vision', false),
+        'Instagram' => $this->input->post('social_insta', false),
+        'Facebook' => $this->input->post('social_facebook', false),
+        'YouTube' => $this->input->post('social_youtube', false),
+        'X' => $this->input->post('social_x', false),
         'updated_by' => $user->uid
     ];
 
