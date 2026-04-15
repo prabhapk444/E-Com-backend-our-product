@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 11, 2026 at 07:08 AM
+-- Generation Time: Apr 15, 2026 at 11:35 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.1.25
 
@@ -110,7 +110,7 @@ INSERT INTO `orders` (`id`, `order_id`, `name`, `email`, `phone`, `address`, `ci
 (4, 'ORD-69D0EBE9637D4', 'S Prabhakaran', 'viperprabhakaran@gmail.com', '6383786437', '11,sedan kinatru street,thiruthangal', 'sivakasi', 'Tamil Nadu', '626130', 8149.00, 203.73, 203.73, 8556.45, 'cod', NULL, 'cod', 'delivered', NULL, '2026-04-06 09:37:37', '2026-04-04 10:46:01'),
 (5, 'ORD-69D143AAF0AFE', 'S Prabhakaran', 'viperprabhakaran@gmail.com', '6383786437', '11,sedan kinatru street,thiruthangal', 'sivakasi', 'Tamil Nadu', '626130', 1.00, 0.03, 0.03, 1.05, 'online', 'pay_SZUSmJw6ETX6Le', 'paid', 'delivered', NULL, '2026-04-06 10:04:36', '2026-04-04 17:00:26'),
 (6, 'ORD-69D389D4C90C4', 'S Prabhakaran', 'viperprabhakaran@gmail.com', '6383786437', '11,sedan kinatru street,thiruthangal', 'sivakasi', 'Tamil Nadu', '626130', 1640.00, 41.00, 41.00, 1722.00, 'cod', NULL, 'cod', 'cancelled', NULL, '2026-04-06 14:02:29', '2026-04-06 10:24:20'),
-(7, 'ORD-69D5EA2D344BF', 'S Prabhakaran', 'viperprabhakaran@gmail.com', '6383786437', '11,sedan kinatru street,thiruthangal', 'sivakasi', 'Tamil Nadu', '626130', 2400.00, 60.00, 60.00, 2520.00, 'cod', NULL, 'cod', 'processing', NULL, '2026-04-08 05:43:58', '2026-04-08 05:39:57');
+(7, 'ORD-69D5EA2D344BF', 'S Prabhakaran', 'viperprabhakaran@gmail.com', '6383786437', '11,sedan kinatru street,thiruthangal', 'sivakasi', 'Tamil Nadu', '626130', 2400.00, 60.00, 60.00, 2520.00, 'cod', NULL, 'cod', 'delivered', NULL, '2026-04-14 06:44:51', '2026-04-08 05:39:57');
 
 -- --------------------------------------------------------
 
@@ -171,7 +171,10 @@ INSERT INTO `password_reset_tokens` (`id`, `user_id`, `token`, `expires_at`, `us
 (5, 2, '705060', '2026-03-23 04:07:46', 1, '2026-03-23 08:32:46'),
 (6, 2, '780958', '2026-03-23 18:21:47', 1, '2026-03-23 22:46:47'),
 (7, 2, '777800', '2026-03-23 18:26:37', 1, '2026-03-23 22:51:37'),
-(8, 2, '801070', '2026-03-24 05:46:16', 1, '2026-03-24 10:11:16');
+(8, 2, '801070', '2026-03-24 05:46:16', 1, '2026-03-24 10:11:16'),
+(9, 5, '179125', '2026-04-13 08:56:47', 0, '2026-04-13 12:21:47'),
+(10, 5, '693178', '2026-04-13 08:56:48', 0, '2026-04-13 12:21:48'),
+(11, 2, '787338', '2026-04-13 09:03:29', 0, '2026-04-13 12:28:29');
 
 -- --------------------------------------------------------
 
@@ -208,7 +211,7 @@ CREATE TABLE `products` (
 INSERT INTO `products` (`id`, `name`, `description`, `category_id`, `subcategory_id`, `quantity`, `price`, `image`, `rating`, `review_count`, `gst`, `weight`, `hsn_code`, `is_active`, `created_by`, `updated_by`, `created_at`, `updated_at`, `featured`) VALUES
 (4, 'Classical Smart watche', 'Stylish black smart watch with modern design and essential features. It comes with fitness tracking, heart rate monitoring, and long-lasting battery life. Perfect for daily use with a comfortable strap and sleek look', 1, 1, 30, 4100.00, NULL, 0.00, 0, '5', '400g', '5201', '1', 5, 5, '2026-04-01 16:28:41', '2026-04-04 12:08:37', 1),
 (5, 'Full Sleeve Shirt', 'Stylish and comfortable full sleeve shirt made from premium cotton fabric. Perfect for casual and office wear, featuring a modern fit, breathable material, and vibrant colors that stay fresh all day. Available in multiple Colors.', 2, 2, 22, 450.00, NULL, 5.00, 1, '5', '220g', '6205', '1', 5, 5, '2026-04-01 18:37:00', '2026-04-09 11:09:50', 1),
-(6, 'Wireless Bluetooth Speaker', 'Portable Bluetooth speaker with strong bass, wireless connectivity, and long battery backup. Perfect for travel and daily use.', 1, 3, 19, 2400.00, 'uploads/products/1775297192_OIP.webp', 0.00, 0, '18', '1kg', '8518', '1', 5, 5, '2026-04-04 11:42:49', '2026-04-08 11:09:57', 1),
+(6, 'Wireless Bluetooth Speaker', 'Portable Bluetooth speaker with strong bass, wireless connectivity, and long battery backup. Perfect for travel and daily use.', 1, 3, 19, 2400.00, 'uploads/products/1775297192_OIP.webp', 0.00, 0, '18', '1kg', '8518', '1', 5, 5, '2026-04-04 11:42:49', '2026-04-15 07:16:15', 1),
 (7, 'HydraGlow Nourishing Body Lotion', 'A lightweight and deeply hydrating body lotion designed to nourish and protect your skin. This fragrance-free formula is perfect for sensitive skin, providing long-lasting moisture without irritation. Enriched with skin-loving ingredients, it absorbs quickly and leaves your skin soft, smooth, and naturally radiant.\n\nIdeal for daily use, this body lotion helps maintain healthy, hydrated skin throughout the day without any greasy residue.', 3, 4, 25, 400.00, 'uploads/products/1775299479_Natural Face Serum.jpg', 0.00, 0, '18', '200', '3304', '1', 5, 5, '2026-04-04 12:44:39', '2026-04-08 07:02:07', 1);
 
 -- --------------------------------------------------------
@@ -281,15 +284,32 @@ CREATE TABLE `settings` (
   `name` varchar(150) DEFAULT NULL,
   `email` varchar(150) DEFAULT NULL,
   `phone` varchar(20) DEFAULT NULL,
+  `place` text DEFAULT NULL,
+  `our_story` varchar(500) DEFAULT NULL,
+  `our_mission` varchar(200) DEFAULT NULL,
+  `our_vision` varchar(200) DEFAULT NULL,
+  `store_hours` varchar(100) DEFAULT NULL,
+  `store_closed` varchar(100) DEFAULT NULL,
   `low_stock_threshold` int(11) DEFAULT NULL,
-  `description` text DEFAULT NULL,
   `logo` text DEFAULT NULL,
   `about_image` text DEFAULT NULL,
+  `hero_image` text DEFAULT NULL,
+  `Instagram` text DEFAULT NULL,
+  `Facebook` text DEFAULT NULL,
+  `YouTube` text DEFAULT NULL,
+  `X` text DEFAULT NULL,
   `created_by` int(11) DEFAULT NULL,
   `updated_by` int(11) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NULL DEFAULT NULL ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `settings`
+--
+
+INSERT INTO `settings` (`id`, `name`, `email`, `phone`, `place`, `our_story`, `our_mission`, `our_vision`, `store_hours`, `store_closed`, `low_stock_threshold`, `logo`, `about_image`, `hero_image`, `Instagram`, `Facebook`, `YouTube`, `X`, `created_by`, `updated_by`, `created_at`, `updated_at`) VALUES
+(1, 'ThriveKart', 'thriveboostbill@gmail.com', '6383786437', '123 Fashion Street, Sivakasi Sivakasi - 626130, Tamil Nadu', 'ThriveKart was born from a simple idea — to create a smarter and more meaningful shopping experience for everyone. In a world filled with endless choices, we saw the need for a platform that not only offers quality products but also helps customers make better decisions. What started as a vision to simplify online shopping has now grown into a brand that focuses on trust, convenience, and continuous growth. At ThriveKart, every product we offer and every service we build is designed to help our ', 'Our mission at ThriveKart is to deliver high-quality products, seamless shopping experiences, and reliable customer service that people can trust. We are committed to continuously improving our platfo', 'Our vision is to become a leading e-commerce platform that empowers people to shop smarter and live better. We aim to build a digital marketplace where innovation meets simplicity, and where every cus', 'Sat: 10:00 AM - 8:00 PM', 'Sunday', 5, 'uploads/gallery/1776237876_logo.png', 'uploads/gallery/1776235020_about.webp', 'uploads/gallery/1776235020_hero.webp', 'https://instagram.com', 'https://facebook.com', 'https://youtube.com', 'https://twitter.com', 5, 5, '2026-04-15 05:36:42', '2026-04-15 09:10:06');
 
 -- --------------------------------------------------------
 
@@ -348,8 +368,8 @@ INSERT INTO `users` (`id`, `name`, `email`, `place`, `phonenumber`, `password`, 
 (1, 'Thrive Boost', 'thriveboosttech@gmail.com', 'sivakasi', '6383786437', '$2y$10$pTf941lweksalsmXjZhYaup5xEa/aksR0Ve13R6rZqbcFdBl.5riK', NULL, 1, 1, NULL, '2026-03-22 19:41:10', '2026-03-22 22:34:38', 1),
 (2, 'Prabha', 'viperprabhakaran@gmail.com', 'sivakasi', '6383786437', '$2y$10$ixF3UcwcoSyv8SIdBQMtk.ZmfLOsr/lnxbyu1G2gGHRaZfXgMMgKm', NULL, 3, NULL, NULL, '2026-03-22 20:14:11', '2026-03-24 10:11:52', 1),
 (3, 'prabha', 'thriveprabha@gmail.com', NULL, NULL, '$2y$10$7pCPIEgSPLkqujOhoF.myec0WbeSpGMxNCWLWXlm90vg2Z/3H.Hha', NULL, 3, NULL, NULL, '2026-03-23 13:32:24', '2026-03-23 13:32:24', 1),
-(5, 'Prabhakaran', 'prabhakarans@anjaconline.org', 'Sivakasi', NULL, '$2y$10$TJ.6PIz3sUEIx0ywEs3shuxTeH3G5BVX6QRVSq71CtMiywJc7tSRW', NULL, 2, NULL, NULL, '2026-03-23 00:00:00', '2026-03-23 23:12:23', 1),
-(6, 'Ganesh Krishna', 'gk3946020@gmail.com', 'Srivi', NULL, '$2y$10$w9DdfLslL228GYePxDxaA.cGh9i9E3bB3aJ0RqZAJeBvhlM8lfqx.', NULL, 2, NULL, NULL, '2026-03-23 00:00:00', '2026-03-23 23:03:31', 1);
+(5, 'Prabha admin', 'thriveboostbill@gmail.com', 'Sivakasi', '6383786437', '$2y$10$TJ.6PIz3sUEIx0ywEs3shuxTeH3G5BVX6QRVSq71CtMiywJc7tSRW', NULL, 2, NULL, NULL, '2026-03-23 00:00:00', '2026-04-15 11:03:35', 1),
+(6, 'Ganesh Krishna', 'gk3946020@gmail.com', 'Srivi', '63802 49114', '$2y$10$w9DdfLslL228GYePxDxaA.cGh9i9E3bB3aJ0RqZAJeBvhlM8lfqx.', NULL, 2, NULL, NULL, '2026-03-23 00:00:00', '2026-04-13 11:32:28', 1);
 
 -- --------------------------------------------------------
 
@@ -508,7 +528,7 @@ ALTER TABLE `order_items`
 -- AUTO_INCREMENT for table `password_reset_tokens`
 --
 ALTER TABLE `password_reset_tokens`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT for table `products`
@@ -532,7 +552,7 @@ ALTER TABLE `reviews`
 -- AUTO_INCREMENT for table `settings`
 --
 ALTER TABLE `settings`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `subcategories`
