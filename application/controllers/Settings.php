@@ -1,16 +1,62 @@
 <?php
 class Settings extends CI_Controller {
-        private $upload_path = './uploads/gallery/';
+   private $upload_path;
 
-    public function __construct() {
-        parent::__construct();
-        $this->load->model('Settings_model');
-        $this->load->model('Jwt_model');
-        $this->load->helper('response');
+public function __construct() {
+    parent::__construct();
+
+       $this->upload_path = 'uploads/gallery/'; 
+
+    $this->load->model('Settings_model');
+    $this->load->model('Jwt_model');
+    $this->load->helper('response');
+    $this->load->library('upload');
+}
+
+
+private function uploadImage($field, $name) {
+    $config = [
+        'upload_path'      => FCPATH . 'uploads/gallery/',
+        'allowed_types'    => '*', 
+        'file_name'        => time() . '_' . $name,
+        'max_size'         => 2048,
+        'detect_mime'      => FALSE,
+        'file_ext_tolower' => TRUE,
+        'remove_spaces'    => TRUE
+    ];
+
+    $this->upload->initialize($config);
+
+    if ($this->upload->do_upload($field)) {
+        $file = $this->upload->data();
+
+
+        $allowed_ext = ['jpg','jpeg','png','webp','gif'];
+
+        if (!in_array($file['file_ext'], array_map(fn($e)=>'.'.$e, $allowed_ext))) {
+            unlink($file['full_path']); // delete file
+            return ['error' => 'Invalid file type'];
+        }
+
+        return 'uploads/gallery/' . $file['file_name'];
+
+    } else {
+        return ['error' => strip_tags($this->upload->display_errors())];
     }
+}
+    public function index() {
+    $user = $this->Jwt_model->verify_token();
 
+    if (!$user) return unauthorized("Unauthorized");
 
-    
+    if (!in_array((int)$user->role, [2, 3], true)) {
+    return unauthorized("Access denied");
+}
+
+    $data = $this->Settings_model->get();
+
+    return success_response("Settings fetched", $data);
+}
 
   public function save() {
     $user = $this->Jwt_model->verify_token();
@@ -18,9 +64,9 @@ class Settings extends CI_Controller {
     if (!$user) return unauthorized("Unauthorized");
 
   
-    if ($user->role != 2) {
-        return unauthorized("Access denied - Admin only");
-    }
+   if ((int)$user->role !== 2) {
+    return unauthorized("Access denied - Admin only");
+}
 
     $post = $this->input->post();
 
@@ -28,8 +74,10 @@ class Settings extends CI_Controller {
         'name' => $post['name'],
         'email' => $post['email'],
         'phone' => $post['phone'],
-        'low_stock_threshold' => $post['lowStockThreshold'],
-        'description' => $post['description'],
+        'place' => $post['place'],
+        'store_hours' => $post['store_hours'],
+        'store_closed' => $post['store_closed'],
+      'low_stock_threshold' => $post['low_stock_threshold'],
         'updated_by' => $user->uid
     ];
 
@@ -38,31 +86,23 @@ class Settings extends CI_Controller {
     }
 
 
-    if (!empty($_FILES['logo']['name'])) {
-        $config = [
-            'upload_path' => $this->upload_path,
-            'allowed_types' => 'jpg|jpeg|png|webp',
-            'file_name' => time() . '_logo',
-        ];
+   if (!empty($_FILES['logo']['name'])) {
+    $res = $this->uploadImage('logo', 'logo');
+    if (isset($res['error'])) return error_response($res['error']);
+    $data['logo'] = $res;
+}
 
-        $this->load->library('upload', $config);
+if (!empty($_FILES['about_image']['name'])) {
+    $res = $this->uploadImage('about_image', 'about');
+    if (isset($res['error'])) return error_response($res['error']);
+    $data['about_image'] = $res;
+}
 
-        if ($this->upload->do_upload('logo')) {
-            $file = $this->upload->data();
-            $data['logo'] = str_replace('./', '', $this->upload_path) . $file['file_name'];
-        }
-    }
-
-
-    if (!empty($_FILES['about_image']['name'])) {
-        $config['file_name'] = time() . '_about';
-        $this->upload->initialize($config);
-
-        if ($this->upload->do_upload('about_image')) {
-            $file = $this->upload->data();
-            $data['about_image'] = str_replace('./', '', $this->upload_path) . $file['file_name'];
-        }
-    }
+if (!empty($_FILES['hero_image']['name'])) {
+    $res = $this->uploadImage('hero_image', 'hero');
+    if (isset($res['error'])) return error_response($res['error']);
+    $data['hero_image'] = $res;
+}
 
     if (!$this->Settings_model->get()) {
         $data['created_by'] = $user->uid;

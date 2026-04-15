@@ -181,9 +181,8 @@ $route['reviews/delete/(:num)'] = 'reviews/delete/$1';
 
 
 // settings endpoints
-$route['settings'] = 'settings/get';
+$route['settings'] = 'settings/index';
 $route['settings/save'] = 'settings/save';
-
 
 $route['dashboard/monthly-sales'] = 'reports/monthly_sales';
 $route['dashboard/order-status'] = 'reports/order_status';
