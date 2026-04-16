@@ -74,7 +74,8 @@ class Auth extends CI_Controller {
         return unauthorized("Your account is disabled. Contact admin.");
     }
 
-  
+    $this->User_model->update_last_login($user->id);
+
     $token = $this->Jwt_model->encode([
         'uid' => $user->id,
         'email' => $user->email,
@@ -111,10 +112,11 @@ class Auth extends CI_Controller {
         return unauthorized("Access denied. Not super admin");
     }
 
-   
     if (intval($user->is_enabled) !== 1) {
         return unauthorized("Your account is disabled. Contact admin.");
     }
+
+    $this->User_model->update_last_login($user->id);
 
     $token = $this->Jwt_model->encode([
         'uid' => $user->id,
@@ -150,10 +152,11 @@ class Auth extends CI_Controller {
         return unauthorized("Access denied. Not admin");
     }
 
-  
     if (intval($user->is_enabled) !== 1) {
         return unauthorized("Your account is disabled. Contact admin.");
     }
+
+    $this->User_model->update_last_login($user->id);
 
     $token = $this->Jwt_model->encode([
         'uid' => $user->id,
@@ -256,6 +259,8 @@ public function google_login() {
         }
         log_message('info', '[GAuth] google_login: Existing user login email=' . $email);
     }
+
+    $this->User_model->update_last_login($user->id);
 
     $jwt = $this->Jwt_model->encode([
         'uid'   => $user->id,

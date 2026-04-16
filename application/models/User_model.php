@@ -68,4 +68,10 @@ class User_model extends CI_Model {
         ->update($this->table, ['is_enabled' => $isEnabled ? 1 : 0]);
 }
 
+public function update_last_login($user_id) {
+    return $this->db
+        ->where('id', $user_id)
+        ->update($this->table, ['last_login_at' => date('Y-m-d H:i:s')]);
+}
+
 }
