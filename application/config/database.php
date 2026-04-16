@@ -78,7 +78,7 @@ $db['default'] = array(
 	'hostname' => 'localhost',
 	'username' => (ENVIRONMENT !== 'production')?'root':'u971454335_thriveecom',
 	'password' => (ENVIRONMENT !== 'production')?'':'Asusexpertbookp1series',
-	'database' => (ENVIRONMENT !== 'production')?'e-com':'u971454335_thriveecom',
+	'database' => (ENVIRONMENT !== 'production')?'ecom':'u971454335_thriveecom',
 	'dbdriver' => 'mysqli',
 	'dbprefix' => '',
 	'pconnect' => FALSE,
