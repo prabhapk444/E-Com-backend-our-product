@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 16, 2026 at 07:23 AM
+-- Generation Time: Apr 16, 2026 at 11:13 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.1.25
 
@@ -18,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `e-com`
+-- Database: `ecom`
 --
 
 -- --------------------------------------------------------
@@ -355,6 +355,7 @@ CREATE TABLE `users` (
   `role` tinyint(4) NOT NULL COMMENT '1=Super Admin, 2=Admin, 3=User, 4=Employee',
   `createdby` int(11) DEFAULT NULL,
   `updatedby` int(11) DEFAULT NULL,
+  `last_login_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `createdat` datetime NOT NULL DEFAULT current_timestamp(),
   `updatedat` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `is_enabled` tinyint(1) NOT NULL DEFAULT 1
@@ -364,12 +365,12 @@ CREATE TABLE `users` (
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `name`, `email`, `place`, `phonenumber`, `password`, `google_id`, `role`, `createdby`, `updatedby`, `createdat`, `updatedat`, `is_enabled`) VALUES
-(1, 'Thrive Boost', 'thriveboosttech@gmail.com', 'sivakasi', '6383786437', '$2y$10$pTf941lweksalsmXjZhYaup5xEa/aksR0Ve13R6rZqbcFdBl.5riK', NULL, 1, 1, NULL, '2026-03-22 19:41:10', '2026-03-22 22:34:38', 1),
-(2, 'Prabha', 'viperprabhakaran@gmail.com', 'sivakasi', '6383786437', '$2y$10$ixF3UcwcoSyv8SIdBQMtk.ZmfLOsr/lnxbyu1G2gGHRaZfXgMMgKm', NULL, 3, NULL, NULL, '2026-03-22 20:14:11', '2026-03-24 10:11:52', 1),
-(3, 'prabha', 'thriveprabha@gmail.com', NULL, NULL, '$2y$10$7pCPIEgSPLkqujOhoF.myec0WbeSpGMxNCWLWXlm90vg2Z/3H.Hha', NULL, 3, NULL, NULL, '2026-03-23 13:32:24', '2026-03-23 13:32:24', 1),
-(5, 'Prabha admin', 'thriveboostbill@gmail.com', 'Sivakasi', '6383786437', '$2y$10$TJ.6PIz3sUEIx0ywEs3shuxTeH3G5BVX6QRVSq71CtMiywJc7tSRW', NULL, 2, NULL, NULL, '2026-03-23 00:00:00', '2026-04-15 11:03:35', 1),
-(6, 'Ganesh Krishna', 'gk3946020@gmail.com', 'Srivi', '63802 49114', '$2y$10$w9DdfLslL228GYePxDxaA.cGh9i9E3bB3aJ0RqZAJeBvhlM8lfqx.', NULL, 2, NULL, NULL, '2026-03-23 00:00:00', '2026-04-13 11:32:28', 1);
+INSERT INTO `users` (`id`, `name`, `email`, `place`, `phonenumber`, `password`, `google_id`, `role`, `createdby`, `updatedby`, `last_login_at`, `createdat`, `updatedat`, `is_enabled`) VALUES
+(1, 'Thrive Boost', 'thriveboosttech@gmail.com', 'sivakasi', '6383786437', '$2y$10$pTf941lweksalsmXjZhYaup5xEa/aksR0Ve13R6rZqbcFdBl.5riK', NULL, 1, 1, NULL, '2026-04-16 07:12:46', '2026-03-22 19:41:10', '2026-03-22 22:34:38', 1),
+(2, 'Prabha', 'viperprabhakaran@gmail.com', 'sivakasi', '6383786437', '$2y$10$ixF3UcwcoSyv8SIdBQMtk.ZmfLOsr/lnxbyu1G2gGHRaZfXgMMgKm', NULL, 3, NULL, NULL, '2026-04-16 07:12:46', '2026-03-22 20:14:11', '2026-03-24 10:11:52', 1),
+(3, 'prabha', 'thriveprabha@gmail.com', NULL, NULL, '$2y$10$7pCPIEgSPLkqujOhoF.myec0WbeSpGMxNCWLWXlm90vg2Z/3H.Hha', NULL, 3, NULL, NULL, '2026-04-16 07:12:46', '2026-03-23 13:32:24', '2026-03-23 13:32:24', 1),
+(5, 'Prabha admin', 'thriveboostbill@gmail.com', 'Sivakasi', '6383786437', '$2y$10$TJ.6PIz3sUEIx0ywEs3shuxTeH3G5BVX6QRVSq71CtMiywJc7tSRW', NULL, 2, NULL, NULL, '2026-04-16 07:12:46', '2026-03-23 00:00:00', '2026-04-15 11:03:35', 1),
+(6, 'Ganesh Krishna', 'gk3946020@gmail.com', 'Srivi', '63802 49114', '$2y$10$w9DdfLslL228GYePxDxaA.cGh9i9E3bB3aJ0RqZAJeBvhlM8lfqx.', NULL, 2, NULL, NULL, '2026-04-16 07:12:46', '2026-03-23 00:00:00', '2026-04-13 11:32:28', 1);
 
 -- --------------------------------------------------------
 
