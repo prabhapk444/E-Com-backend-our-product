@@ -15,16 +15,15 @@ class Roles extends CI_Controller {
         header("Content-Type: application/json");
     }
 
-  private function check_role($allowed_roles = []) {
+private function check_role($allowed_roles = []) {
     $user = $this->Jwt_model->verify_token();
 
     if (!$user) {
-        unauthorized("Invalid token");
+        unauthorized('Invalid token');
     }
 
-    // If roles provided → check
     if (!empty($allowed_roles) && !in_array($user->role, $allowed_roles)) {
-        forbidden("Access denied");
+        forbidden('Access denied');
     }
 
     return $user;
@@ -48,9 +47,9 @@ class Roles extends CI_Controller {
 
         $data = json_decode(file_get_contents("php://input"), true);
 
-        if (empty($data['name'])) {
-            send_error('Role name is required');
-        }
+if (!$data || !isset($data['name']) || empty(trim($data['name']))) {
+    send_error('Role name is required');
+}
 
         $insert = [
             'name' => trim($data['name'])
@@ -68,9 +67,9 @@ class Roles extends CI_Controller {
 
         $data = json_decode(file_get_contents("php://input"), true);
 
-        if (empty($data['name'])) {
-            send_error('Role name is required');
-        }
+if (!$data || !isset($data['name']) || empty(trim($data['name']))) {
+    send_error('Role name is required');
+}
 
         $exists = $this->Role_model->find($id);
 

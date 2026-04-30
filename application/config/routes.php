@@ -192,5 +192,5 @@ $route['dashboard/top-products'] = 'reports/top_products';
 
 $route['roles']['GET']    = 'roles/index';
 $route['roles']['POST']   = 'roles/create';
-$route['roles/(:num)']['PUT'] = 'roles/update/$1';
-$route['roles/(:num)']['DELETE'] = 'roles/delete/$1';
+$route['roles/update/(:num)']['POST'] = 'roles/update/$1';
+$route['roles/delete/(:num)']['POST'] = 'roles/delete/$1';
