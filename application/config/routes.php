@@ -188,3 +188,9 @@ $route['settings/save'] = 'settings/save';
 $route['dashboard/monthly-sales'] = 'reports/monthly_sales';
 $route['dashboard/order-status'] = 'reports/order_status';
 $route['dashboard/top-products'] = 'reports/top_products';
+
+
+$route['roles']['GET']    = 'roles/index';
+$route['roles']['POST']   = 'roles/create';
+$route['roles/(:num)']['PUT'] = 'roles/update/$1';
+$route['roles/(:num)']['DELETE'] = 'roles/delete/$1';
