@@ -121,30 +121,5 @@ if (!function_exists('json_response')) {
 
 
 
-function send_success($data = [], $message = 'Success', $code = 200) {
-    $CI = &get_instance();
-    $CI->output
-        ->set_content_type('application/json')
-        ->set_status_header($code)
-        ->set_output(json_encode([
-            'status'  => true,
-            'message' => $message,
-            'data'    => $data
-        ]))
-        ->_display();
-    exit;
-}
 
-function send_error($message = 'Error', $code = 400, $data = []) {
-    $CI = &get_instance();
-    $CI->output
-        ->set_content_type('application/json')
-        ->set_status_header($code)
-        ->set_output(json_encode([
-            'status'  => false,
-            'message' => $message,
-            'data'    => $data
-        ]))
-        ->_display();
-    exit; 
-}
+
