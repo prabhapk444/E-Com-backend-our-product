@@ -196,11 +196,11 @@ $route['roles/update/(:num)']['POST'] = 'roles/update/$1';
 $route['roles/delete/(:num)']['POST'] = 'roles/delete/$1';
 
 // Department endpoints
-$route['departments'] = 'departments/index';
-$route['departments/get/(:num)'] = 'departments/get_by_id/$1';
-$route['departments/create'] = 'departments/create';
-$route['departments/update/(:num)'] = 'departments/update/$1';
-$route['departments/delete/(:num)'] = 'departments/delete/$1';
+$route['departments']['GET'] = 'departments/index';
+$route['departments']['POST'] = 'departments/create';
+$route['departments/(:num)']['PUT'] = 'departments/update/$1';
+$route['departments/(:num)']['DELETE'] = 'departments/delete/$1';
+$route['departments/(:num)']['GET'] = 'departments/get_by_id/$1';
 
 
 

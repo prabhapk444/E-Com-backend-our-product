@@ -43,7 +43,7 @@ class Departments_model extends CI_Model {
         }
         
         $query = $this->db->get();
-        return $query->num_rows();
+   return $this->db->count_all_results();
     }
 
     /**
@@ -80,9 +80,10 @@ class Departments_model extends CI_Model {
      * @return bool
      */
     public function update_department($id, $data) {
-        $this->db->where('id', $id);
-        $this->db->update('departments', $data);
-        return $this->db->affected_rows() > 0;
+       $this->db->where('id', $id);
+$this->db->update('departments', $data);
+
+return $this->db->affected_rows() >= 0;
     }
 
     /**

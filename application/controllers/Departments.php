@@ -7,7 +7,6 @@ class Departments extends CI_Controller {
         parent::__construct();
         $this->load->model('Departments_model');
         $this->load->model('Jwt_model');
-        $this->load->library('form_validation');
         $this->load->helper('response');
     }
 
@@ -19,7 +18,7 @@ class Departments extends CI_Controller {
         return $user;
     }
 
-    // GET all departments with search and pagination
+    // GET all departments
     public function index() {
         $this->auth();
 
@@ -40,7 +39,7 @@ class Departments extends CI_Controller {
         ], "Departments fetched");
     }
 
-    // GET single department by ID
+    // GET single department
     public function get_by_id($id) {
         $this->auth();
 
@@ -53,26 +52,29 @@ class Departments extends CI_Controller {
         }
     }
 
-    // POST create new department
+    // CREATE
     public function create() {
         $this->auth();
 
-        $this->form_validation->set_rules('name', 'Name', 'required|min_length[2]|max_length[255]');
+        $input = json_decode(file_get_contents('php://input'), true);
 
-        if (!$this->form_validation->run()) {
-            return send_error(validation_errors(), 422);
+        $name = trim($input['name'] ?? '');
+
+        // Manual validation
+        if ($name === '') {
+            return send_error("Department name is required", 422);
         }
 
-        $name = $this->input->post('name', true);
+        if (strlen($name) < 2) {
+            return send_error("Minimum 2 characters required", 422);
+        }
 
-        // Check if department already exists
+        // Duplicate check
         if ($this->Departments_model->department_name_exists($name)) {
             return send_error("Department name already exists", 409);
         }
 
-        $data = [
-            'name' => $name
-        ];
+        $data = ['name' => $name];
 
         if ($this->Departments_model->create_department($data)) {
             send_success([], "Department created successfully", 201);
@@ -81,34 +83,36 @@ class Departments extends CI_Controller {
         }
     }
 
-    // PUT update department
+    // UPDATE
     public function update($id) {
         $this->auth();
 
         $id = (int)$id;
 
-        // Check if department exists
         $existingDept = $this->Departments_model->get_department_by_id($id);
         if (!$existingDept) {
             send_error("Department not found", 404);
         }
 
-        $this->form_validation->set_rules('name', 'Name', 'required|min_length[2]|max_length[255]');
+        $input = json_decode(file_get_contents('php://input'), true);
 
-        if (!$this->form_validation->run()) {
-            return send_error(validation_errors(), 422);
+        $name = trim($input['name'] ?? '');
+
+        // Manual validation
+        if ($name === '') {
+            return send_error("Department name is required", 422);
         }
 
-        $name = $this->input->put('name', true);
+        if (strlen($name) < 2) {
+            return send_error("Minimum 2 characters required", 422);
+        }
 
-        // Check if another department with same name exists
+        // Duplicate check
         if ($this->Departments_model->department_name_exists($name, $id)) {
             return send_error("Department name already exists", 409);
         }
 
-        $data = [
-            'name' => $name
-        ];
+        $data = ['name' => $name];
 
         if ($this->Departments_model->update_department($id, $data)) {
             send_success([], "Department updated successfully");
@@ -117,13 +121,12 @@ class Departments extends CI_Controller {
         }
     }
 
-    // DELETE department
+    // DELETE
     public function delete($id) {
         $this->auth();
 
         $id = (int)$id;
 
-        // Check if department exists
         $existingDept = $this->Departments_model->get_department_by_id($id);
         if (!$existingDept) {
             send_error("Department not found", 404);
