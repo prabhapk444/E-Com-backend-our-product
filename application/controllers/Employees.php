@@ -38,6 +38,12 @@ class Employees extends CI_Controller {
     public function store() {
         $user = $this->auth();
 
+        $input = json_decode(file_get_contents("php://input"), true);
+        if (!$input) {
+            return send_error("Invalid input", 400);
+        }
+
+        $this->form_validation->set_data($input);
         $this->form_validation->set_rules('name', 'Name', 'required|min_length[3]');
         $this->form_validation->set_rules('email', 'Email', 'required|valid_email|is_unique[employees.email]');
         $this->form_validation->set_rules('phone', 'Phone', 'required');
@@ -51,15 +57,15 @@ class Employees extends CI_Controller {
         }
 
         $data = [
-            'name' => $this->input->post('name', true),
-            'email' => $this->input->post('email', true),
-            'phone' => $this->input->post('phone', true),
-            'role' => $this->input->post('role', true),
-            'department' => $this->input->post('department', true),
-            'salary' => $this->input->post('salary', true),
-            'joined_date' => $this->input->post('joined_date', true),
+            'name' => $input['name'] ?? null,
+            'email' => $input['email'] ?? null,
+            'phone' => $input['phone'] ?? null,
+            'role' => $input['role'] ?? null,
+            'department' => $input['department'] ?? null,
+            'salary' => $input['salary'] ?? null,
+            'joined_date' => $input['joined_date'] ?? date('Y-m-d'),
             'status' => 'active',
-            'created_by' => $user->id ?? null,
+            'created_by' => $user->uid ?? $user->id ?? null,
             'created_at' => date('Y-m-d H:i:s'),
         ];
 
@@ -89,12 +95,32 @@ class Employees extends CI_Controller {
             }
         }
 
-        $input['updated_by'] = $user->id ?? null;
+        $input['updated_by'] = $user->uid ?? $user->id ?? null;
         $input['updated_at'] = date('Y-m-d H:i:s');
 
         $this->Employee_model->update_data($id, $input);
 
         send_success([], "Employee updated");
+    }
+
+    // TOGGLE STATUS
+    public function status($id) {
+        $user = $this->auth();
+
+        $employee = $this->Employee_model->get_by_id($id);
+        if (!$employee) {
+            return send_error("Employee not found", 404);
+        }
+
+        $newStatus = $employee->status === "active" ? "inactive" : "active";
+
+        $this->Employee_model->update_data($id, [
+            "status" => $newStatus,
+            "updated_by" => $user->uid ?? $user->id ?? null,
+            "updated_at" => date("Y-m-d H:i:s"),
+        ]);
+
+        send_success(["status" => $newStatus], "Employee status updated");
     }
 
     // DELETE

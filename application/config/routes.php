@@ -209,3 +209,4 @@ $route['employees']['GET'] = 'employees/index';
 $route['employees']['POST'] = 'employees/store';
 $route['employees/(:num)']['PUT'] = 'employees/update/$1';
 $route['employees/(:num)']['DELETE'] = 'employees/delete/$1';
+$route['employees/(:num)/status']['PUT'] = 'employees/status/$1';
