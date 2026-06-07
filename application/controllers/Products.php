@@ -348,6 +348,8 @@ if (empty($data) || (!isset($data['name']) && isset($_POST['data']))) {
             'hsn_code' => $data['hsnCode'] ?? $data['hsn_code'] ?? '',
             'is_active' => $data['isActive'] ?? $data['is_active'] ?? '1',
             'featured' => $data['featured'] ?? $data['is_featured'] ?? '0',
+            'discount_price' => $data['discount_price'] ?? null,
+            'discount_type' => $data['discount_type'] ?? null,
             'created_by' => $user_id
         ];
 
@@ -490,6 +492,8 @@ if (empty($data) || (!isset($data['name']) && isset($_POST['data']))) {
         'hsn_code' => $data['hsnCode'] ?? $data['hsn_code'] ?? $product['hsn_code'],
         'is_active' => $data['isActive'] ?? $data['is_active'] ?? $product['is_active'],
         'featured' => $data['featured'] ?? $data['is_featured'] ?? $product['featured'],
+        'discount_price' => $data['discount_price'] ?? $product['discount_price'],
+        'discount_type' => $data['discount_type'] ?? $product['discount_type'],
         'updated_by' => $user_id
     ];
 
