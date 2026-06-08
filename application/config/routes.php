@@ -210,3 +210,6 @@ $route['employees']['POST'] = 'employees/store';
 $route['employees/(:num)']['PUT'] = 'employees/update/$1';
 $route['employees/(:num)']['DELETE'] = 'employees/delete/$1';
 $route['employees/(:num)/status']['PUT'] = 'employees/status/$1';
+
+$route['employee_access/employee/(:num)']['GET'] = 'employee_access/employee/$1';
+$route['employee_access/employee/(:num)']['PUT'] = 'employee_access/update_employee/$1';

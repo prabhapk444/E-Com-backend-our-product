@@ -64,6 +64,7 @@ class Employees extends CI_Controller {
             'department' => $input['department'] ?? null,
             'salary' => $input['salary'] ?? null,
             'joined_date' => $input['joined_date'] ?? date('Y-m-d'),
+            'password' => !empty($input['password']) ? password_hash($input['password'], PASSWORD_DEFAULT) : null,
             'status' => 'active',
             'created_by' => $user->uid ?? $user->id ?? null,
             'created_at' => date('Y-m-d H:i:s'),
@@ -97,6 +98,12 @@ class Employees extends CI_Controller {
 
         $input['updated_by'] = $user->uid ?? $user->id ?? null;
         $input['updated_at'] = date('Y-m-d H:i:s');
+
+        if (isset($input['password']) && $input['password'] !== '') {
+            $input['password'] = password_hash($input['password'], PASSWORD_DEFAULT);
+        } else {
+            unset($input['password']);
+        }
 
         $this->Employee_model->update_data($id, $input);
 
