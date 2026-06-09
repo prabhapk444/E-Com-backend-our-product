@@ -115,7 +115,33 @@ public function settings() {
         ->set_output(json_encode(["status" => true, "data" => $data]));
 }
 
- public function get_monthly_sales_data() {
+  public function employee_stats() {
+    $user = $this->Jwt_model->verify_token();
+    if (!$user) return unauthorized("Access denied");
+
+    $data = [
+      "totalOrders" => (int)$this->Dashboard_model->get_total_orders(),
+      "totalProducts" => (int)$this->Dashboard_model->get_total_products_with_variants(),
+      "totalUsers" => (int)$this->Dashboard_model->get_total_users(),
+    ];
+
+    return $this->output
+      ->set_content_type('application/json')
+      ->set_output(json_encode(["status" => true, "data" => $data]));
+  }
+
+  public function employee_orders() {
+    $user = $this->Jwt_model->verify_token();
+    if (!$user) return unauthorized("Access denied");
+
+    $data = $this->Dashboard_model->get_recent_orders();
+
+    return $this->output
+      ->set_content_type('application/json')
+      ->set_output(json_encode(["status" => true, "data" => $data]));
+  }
+
+  public function get_monthly_sales_data() {
     $user = $this->check_role([2]);
         if (!$user) return unauthorized("Access denied");
 
@@ -135,6 +161,6 @@ public function settings() {
             'totalOrders' => $totalOrders,
             'avgOrderValue' => $avgOrderValue
         ]));
-}
+  }
 
 }

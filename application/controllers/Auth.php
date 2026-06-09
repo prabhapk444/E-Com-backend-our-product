@@ -573,6 +573,11 @@ public function admin_reset_password() {
         return unauthorized("Your account is inactive. Contact admin.");
     }
 
+    date_default_timezone_set('Asia/Kolkata');
+    $this->load->model('Employee_model');
+    $this->Employee_model->update_data($employee->id, ['last_login_at' => date('Y-m-d H:i:s')]);
+    $employee = $this->Employee_model->get_by_id($employee->id);
+
     $token = $this->Jwt_model->encode([
         'uid'          => $employee->id,
         'email'        => $employee->email,

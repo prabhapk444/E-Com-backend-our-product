@@ -79,6 +79,9 @@ $route['auth/admin-reset-password']['post'] = 'auth/admin_reset_password';
 
 $route['api/dashboard/stats'] = 'dashboard/stats';
 $route['api/dashboard/orders'] = 'dashboard/orders';
+$route['api/dashboard/employee/stats'] = 'dashboard/employee_stats';
+$route['api/dashboard/employee/orders'] = 'dashboard/employee_orders';
+$route['api/dashboard/employee/recent-orders'] = 'dashboard/employee_orders';
 $route['api/dashboard/order-status'] = 'dashboard/order_status';
 $route['api/dashboard/monthly-sales'] = 'dashboard/monthly_sales';
 $route['api/dashboard/low-stock'] = 'dashboard/low_stock';
@@ -118,7 +121,7 @@ $route['subcategories/(:num)'] = 'subcategory/view/$1';
 $route['subcategories/create'] = 'subcategory/create';
 $route['subcategories/update/(:num)'] = 'subcategory/update/$1';
 $route['subcategories/delete/(:num)'] = 'subcategory/delete/$1';
-$route['subcategories/toggle/(:num)'] = 'subcategory/toggle/$1';
+$route['subcategories/toggle/(:num)'] = 'subcategory/toggle_status/$1';
 
 
 
