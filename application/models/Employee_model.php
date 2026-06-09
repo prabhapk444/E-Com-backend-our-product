@@ -49,4 +49,28 @@ class Employee_model extends CI_Model {
     public function delete_data($id) {
         return $this->db->where('id', $id)->delete($this->table);
     }
+
+    public function get_by_email($email) {
+        return $this->db->where('email', $email)->get($this->table)->row();
+    }
+
+    public function update_password($employeeId, $password) {
+        return $this->db->where('id', $employeeId)->update($this->table, ['password' => $password]);
+    }
+
+    public function save_reset_token($data) {
+        $this->db->insert('password_reset_tokens', $data);
+    }
+
+    public function get_valid_token($token) {
+        return $this->db->where('token', $token)
+            ->where('used', 0)
+            ->where('expires_at >', date('Y-m-d H:i:s'))
+            ->get('password_reset_tokens')
+            ->row();
+    }
+
+    public function mark_token_used($token) {
+        return $this->db->where('token', $token)->update('password_reset_tokens', ['used' => 1]);
+    }
 }

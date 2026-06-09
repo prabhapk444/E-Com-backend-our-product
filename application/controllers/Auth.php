@@ -552,7 +552,93 @@ public function admin_reset_password() {
     $this->User_model->mark_token_used($input['otp']);
 
     return success_response("Admin password reset successful");
-}
+  }
+
+  public function employee_login()
+  {
+    $input = json_decode(file_get_contents("php://input"), true);
+
+    if (empty($input['email']) || empty($input['password'])) {
+        return error_response("Email & Password required");
+    }
+
+    $this->load->model('Employee_model');
+    $employee = $this->Employee_model->get_by_email($input['email']);
+
+    if (!$employee || !password_verify($input['password'], $employee->password)) {
+        return unauthorized("Invalid credentials");
+    }
+
+    if (strval($employee->status) !== 'active') {
+        return unauthorized("Your account is inactive. Contact admin.");
+    }
+
+    $token = $this->Jwt_model->encode([
+        'uid'          => $employee->id,
+        'email'        => $employee->email,
+        'role'         => 4,
+        'employee_id'  => $employee->id,
+        'name'         => $employee->name,
+    ]);
+
+    return success_response("Employee login successful", [
+        'token'        => $token,
+        'employee'     => $employee,
+        'csrf_token'   => ''
+    ]);
+  }
+
+  public function employee_forgot_password()
+  {
+    $input = json_decode(file_get_contents('php://input'), true);
+    if (empty($input['email'])) {
+      return error_response('Email is required');
+    }
+
+    $this->load->model('Employee_model');
+    $employee = $this->Employee_model->get_by_email($input['email']);
+    if (!$employee) {
+      return not_found('Employee not found');
+    }
+
+    $otp = rand(100000, 999999);
+    $expires = date('Y-m-d H:i:s', strtotime('+5 minutes'));
+
+    $this->Employee_model->save_reset_token([
+      'employee_id' => $employee->id,
+      'token' => $otp,
+      'expires_at' => $expires,
+    ]);
+
+    $this->email_library->send_otp_email($employee->email, $otp);
+
+    return success_response('OTP sent to employee email');
+  }
+
+  public function employee_reset_password()
+  {
+    $input = json_decode(file_get_contents('php://input'), true);
+    if (empty($input['otp']) || empty($input['password'])) {
+      return error_response('OTP and password required');
+    }
+
+    $this->load->model('Employee_model');
+    $tokenData = $this->Employee_model->get_valid_token($input['otp']);
+    if (!$tokenData) {
+      return error_response('Invalid or expired OTP');
+    }
+
+    $employee = $this->Employee_model->get_by_id($tokenData->employee_id);
+    if (!$employee) {
+      return not_found('Employee not found');
+    }
+
+    $hashed = password_hash($input['password'], PASSWORD_DEFAULT);
+    $this->Employee_model->update_password($employee->id, $hashed);
+    $this->Employee_model->mark_token_used($input['otp']);
+
+    return success_response('Employee password reset successful');
+  }
 
 
 }

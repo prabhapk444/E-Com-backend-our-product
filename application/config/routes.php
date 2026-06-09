@@ -213,3 +213,7 @@ $route['employees/(:num)/status']['PUT'] = 'employees/status/$1';
 
 $route['employee_access/employee/(:num)']['GET'] = 'employee_access/employee/$1';
 $route['employee_access/employee/(:num)']['PUT'] = 'employee_access/update_employee/$1';
+
+$route['auth/employee-login'] = 'auth/employee_login';
+$route['auth/employee-forgot-password'] = 'auth/employee_forgot_password';
+$route['auth/employee-reset-password'] = 'auth/employee_reset_password';
