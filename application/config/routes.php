@@ -114,7 +114,6 @@ $route['category/update/(:num)'] = 'category/update/$1';
 $route['category/delete/(:num)'] = 'category/delete/$1';
 $route['category/toggle_status/(:num)'] = 'category/toggle_status/$1';
 
-
 $route['subcategories'] = 'subcategory/index';
 $route['subcategories'] = 'subcategory/get_all';
 $route['subcategories/(:num)'] = 'subcategory/view/$1';
@@ -122,6 +121,14 @@ $route['subcategories/create'] = 'subcategory/create';
 $route['subcategories/update/(:num)'] = 'subcategory/update/$1';
 $route['subcategories/delete/(:num)'] = 'subcategory/delete/$1';
 $route['subcategories/toggle/(:num)'] = 'subcategory/toggle_status/$1';
+
+// Status toggle routes with permission check
+$route['api/status/toggle/category/(:num)'] = 'category/toggle_status/$1';
+$route['api/status/toggle/subcategory/(:num)'] = 'subcategory/toggle_status/$1';
+$route['api/status/toggle/product/(:num)'] = 'products/toggle_status/$1';
+$route['api/status/toggle/feedback/(:num)'] = 'feedback/toggle_status/$1';
+$route['api/status/toggle/review/(:num)'] = 'reviews/toggle/$1';
+$route['api/status/toggle/employee/(:num)'] = 'employees/status/$1';
 
 
 

@@ -24,6 +24,7 @@ class Employee_access_model extends CI_Model {
                 'edit'     => (bool)$row->can_edit,
                 'delete'   => (bool)$row->can_delete,
                 'export'   => (bool)$row->can_export,
+                'status'   => (bool)$row->can_status,
             ];
         }
         return $map;
@@ -43,6 +44,7 @@ class Employee_access_model extends CI_Model {
                 'can_edit'    => !empty($perms['edit'])     ? 1 : 0,
                 'can_delete'  => !empty($perms['delete'])   ? 1 : 0,
                 'can_export'  => !empty($perms['export'])   ? 1 : 0,
+                'can_status'  => !empty($perms['status'])   ? 1 : 0,
                 'updated_by'  => $updatedBy,
                 'updated_at'  => $now,
             ];

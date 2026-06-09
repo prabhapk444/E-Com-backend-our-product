@@ -655,14 +655,19 @@ if (!empty($variant['id'])) {
     }
 
     public function toggle_status($id) {
-        $permission = $this->has_permission('2');
-        if (!$permission['valid']) {
-            if ($permission['message'] === 'Unauthorized') {
-                unauthorized('Authentication required');
-            } else {
-                forbidden($permission['message']);
-            }
+        $user = $this->get_current_user();
+        if (!$user) {
+            unauthorized('Authentication required');
             return;
+        }
+
+        if ((int)$user->role !== 2) {
+            $employeeId = $user->employee_id ?? $user->uid;
+            $allowed = $this->hasEmployeeStatusPermission($employeeId, 'products');
+            if (!$allowed) {
+                forbidden('You do not have permission to update product status');
+                return;
+            }
         }
 
         $result = $this->product_model->toggle_status($id);
@@ -673,6 +678,17 @@ if (!empty($variant['id'])) {
         }
 
         success_response('Product status updated successfully', $result);
+    }
+
+    private function hasEmployeeStatusPermission($employeeId, $moduleKey) {
+        if (!$employeeId) return false;
+        $this->load->database();
+        $perm = $this->db->get_where('employee_access', [
+            'employee_id' => $employeeId,
+            'module_key' => $moduleKey,
+            'can_status' => 1
+        ])->row();
+        return (bool)$perm;
     }
 
     // ============================================

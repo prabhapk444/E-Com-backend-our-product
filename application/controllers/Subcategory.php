@@ -106,8 +106,16 @@ class Subcategory extends CI_Controller {
 
   
     public function toggle_status($id) {
-        $user = $this->check_role([2]);
+        $user = $this->Jwt_model->verify_token();
         if (!$user) return unauthorized("Access denied");
+
+        if ((int)$user->role === 2) {
+            $allowed = true;
+        } else {
+            $allowed = $this->hasEmployeeStatusPermission($user->employee_id ?? $user->uid, 'subcategories');
+        }
+
+        if (!$allowed) return unauthorized("Access denied");
 
         $sub = $this->Subcategory_model->get($id);
         if (!$sub) return error_response("Subcategory not found");
@@ -119,5 +127,15 @@ class Subcategory extends CI_Controller {
         ]);
 
         return success_response("Status updated", ['newStatus' => $newStatus]);
+    }
+
+    private function hasEmployeeStatusPermission($employeeId, $moduleKey) {
+        if (!$employeeId) return false;
+        $perm = $this->db->get_where('employee_access', [
+            'employee_id' => $employeeId,
+            'module_key' => $moduleKey,
+            'can_status' => 1
+        ])->row();
+        return (bool)$perm;
     }
 }
