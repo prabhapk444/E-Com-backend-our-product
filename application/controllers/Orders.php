@@ -68,6 +68,42 @@ class Orders extends CI_Controller {
         return ['valid' => true, 'user' => $user];
     }
 
+    private function has_employee_orders_permission($user, $action = 'view') {
+        if (!$user) {
+            return false;
+        }
+
+        $employeeId = $user->employee_id ?? $user->uid ?? null;
+        if (!$employeeId) {
+            return false;
+        }
+
+        $permission = $this->db
+            ->select('can_view, can_edit, can_status')
+            ->where('employee_id', $employeeId)
+            ->where('module_key', 'orders')
+            ->get('employee_access')
+            ->row();
+
+        if (!$permission) {
+            return false;
+        }
+
+        if ($action === 'status') {
+            return (bool)$permission->can_status || (bool)$permission->can_edit;
+        }
+
+        return (bool)$permission->can_view;
+    }
+
+    private function attach_order_items(&$order) {
+        if (!$order || empty($order['id'])) {
+            return;
+        }
+
+        $order['items'] = $this->order_model->get_items($order['id']);
+    }
+
     // Send order notification email to admin
     private function send_admin_notification($order, $items) {
         // Build items HTML
@@ -578,6 +614,102 @@ class Orders extends CI_Controller {
         $order['items'] = $items;
         
         send_success($order, 'Order retrieved successfully');
+    }
+
+    public function employee_orders() {
+        $user = $this->get_current_user();
+
+        if (!$this->has_employee_orders_permission($user, 'view')) {
+            send_error('Forbidden: You do not have permission to view orders', 403);
+            return;
+        }
+
+        $limit = (int)($this->input->get('limit') ?: 50);
+        $offset = (int)($this->input->get('offset') ?: 0);
+        $status = $this->input->get('status') ?: null;
+
+        $orders = $this->order_model->get_all($limit, $offset, $status);
+
+        foreach ($orders as &$order) {
+            $this->attach_order_items($order);
+        }
+
+        $total = $this->order_model->get_total($status);
+
+        send_success([
+            'orders' => $orders,
+            'total' => $total,
+            'limit' => $limit,
+            'offset' => $offset
+        ], 'Employee orders retrieved successfully');
+    }
+
+    public function employee_order($id) {
+        $user = $this->get_current_user();
+
+        if (!$this->has_employee_orders_permission($user, 'view')) {
+            send_error('Forbidden: You do not have permission to view orders', 403);
+            return;
+        }
+
+        $order = $this->order_model->get_by_id($id);
+
+        if (!$order) {
+            send_error('Order not found', 404);
+            return;
+        }
+
+        $this->attach_order_items($order);
+
+        send_success($order, 'Employee order retrieved successfully');
+    }
+
+    public function employee_update_status($id) {
+        $user = $this->get_current_user();
+
+        if (!$this->has_employee_orders_permission($user, 'status')) {
+            send_error('Forbidden: You do not have permission to update order status', 403);
+            return;
+        }
+
+        $order = $this->order_model->get_by_id($id);
+        if (!$order) {
+            send_error('Order not found', 404);
+            return;
+        }
+
+        if ($order['status'] === 'delivered') {
+            send_error('Delivered orders cannot be updated', 403);
+            return;
+        }
+
+        $json = file_get_contents('php://input');
+        $data = json_decode($json, true);
+        if (!$data) $data = $_POST;
+
+        $status = isset($data['status']) ? $data['status'] : null;
+
+        if (!$status) {
+            send_error('Status is required', 400);
+            return;
+        }
+
+        $valid_statuses = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'];
+        if (!in_array($status, $valid_statuses)) {
+            send_error('Invalid status', 400);
+            return;
+        }
+
+        $employeeId = $user->employee_id ?? $user->uid ?? null;
+        $result = $this->order_model->update_status($id, $status, $employeeId);
+
+        if ($result) {
+            $order = $this->order_model->get_by_id($id);
+            $this->attach_order_items($order);
+            send_success($order, 'Order status updated successfully');
+        } else {
+            send_error('Failed to update order status', 500);
+        }
     }
 
 public function cancel($order_identifier) {

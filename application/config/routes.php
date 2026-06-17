@@ -176,6 +176,13 @@ $route['api/admin/orders/status/(:any)'] = 'orders/by_status/$1';
 $route['api/admin/orders/(:num)'] = 'orders/get_admin/$1';
 $route['api/admin/orders/stats'] = 'orders/stats';
 
+$route['api/employeeorder']['GET'] = 'orders/employee_orders';
+$route['api/employeeorder/(:num)']['GET'] = 'orders/employee_order/$1';
+$route['api/employeeorder/status/(:num)']['PUT'] = 'orders/employee_update_status/$1';
+$route['api/employee/orders']['GET'] = 'orders/employee_orders';
+$route['api/employee/orders/(:num)']['GET'] = 'orders/employee_order/$1';
+$route['api/employee/orders/status/(:num)']['PUT'] = 'orders/employee_update_status/$1';
+
 
 
 

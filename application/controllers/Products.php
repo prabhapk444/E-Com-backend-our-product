@@ -79,6 +79,12 @@ private function upload_image($field_name, $folder = '')
     return null;
 }
 
+    private function normalize_product_discount(&$product) {
+        if (!empty($product['discount_price']) && empty($product['discount_type'])) {
+            $product['discount_type'] = 'percentage';
+        }
+    }
+
     // ============================================
     // PUBLIC METHODS
     // ============================================
@@ -94,6 +100,7 @@ private function upload_image($field_name, $folder = '')
         $products = $this->product_model->get_all($limit, $offset, $search, $category_id, $is_active);
         
         foreach ($products as &$product) {
+            $this->normalize_product_discount($product);
             $product['variants'] = $this->product_model->get_variants($product['id']);
             $product['categoryId'] = $product['category_id'];
             $product['subcategoryId'] = $product['subcategory_id'];
@@ -131,6 +138,7 @@ private function upload_image($field_name, $folder = '')
             return;
         }
 
+        $this->normalize_product_discount($product);
         $product['variants'] = $this->product_model->get_variants($id);
         $product['categoryId'] = $product['category_id'];
         $product['subcategoryId'] = $product['subcategory_id'];
@@ -164,6 +172,8 @@ private function upload_image($field_name, $folder = '')
             return;
         }
 
+        $this->normalize_product_discount($product);
+
         $product['variants'] = $this->product_model->get_variants($product['id']);
         $product['categoryId'] = $product['category_id'];
         $product['subcategoryId'] = $product['subcategory_id'];
@@ -186,6 +196,7 @@ private function upload_image($field_name, $folder = '')
         $products = $this->product_model->get_featured($limit);
         
         foreach ($products as &$product) {
+            $this->normalize_product_discount($product);
             $product['variants'] = $this->product_model->get_variants($product['id']);
             $product['categoryId'] = $product['category_id'];
             $product['subcategoryId'] = $product['subcategory_id'];
@@ -222,6 +233,7 @@ private function upload_image($field_name, $folder = '')
         $products = $this->product_model->get_all($limit, $offset, $search, $category_id, $is_active);
         
         foreach ($products as &$product) {
+            $this->normalize_product_discount($product);
             $product['variants'] = $this->product_model->get_variants($product['id']);
             $product['categoryId'] = $product['category_id'];
             $product['subcategoryId'] = $product['subcategory_id'];
@@ -273,6 +285,7 @@ private function upload_image($field_name, $folder = '')
             return;
         }
 
+        $this->normalize_product_discount($product);
         $product['variants'] = $this->product_model->get_variants($id);
         $product['categoryId'] = $product['category_id'];
         $product['subcategoryId'] = $product['subcategory_id'];
@@ -349,7 +362,7 @@ if (empty($data) || (!isset($data['name']) && isset($_POST['data']))) {
             'is_active' => $data['isActive'] ?? $data['is_active'] ?? '1',
             'featured' => $data['featured'] ?? $data['is_featured'] ?? '0',
             'discount_price' => $data['discount_price'] ?? null,
-            'discount_type' => $data['discount_type'] ?? null,
+            'discount_type' => !empty($data['discount_price']) && empty($data['discount_type']) ? 'percentage' : ($data['discount_type'] ?? null),
             'created_by' => $user_id
         ];
 
@@ -421,6 +434,7 @@ if (empty($data) || (!isset($data['name']) && isset($_POST['data']))) {
         }
 
         $product = $this->product_model->get_by_id($product_id);
+        $this->normalize_product_discount($product);
         $product['variants'] = $this->product_model->get_variants($product_id);
         $product['categoryId'] = $product['category_id'];
         $product['subcategoryId'] = $product['subcategory_id'];
@@ -493,7 +507,7 @@ if (empty($data) || (!isset($data['name']) && isset($_POST['data']))) {
         'is_active' => $data['isActive'] ?? $data['is_active'] ?? $product['is_active'],
         'featured' => $data['featured'] ?? $data['is_featured'] ?? $product['featured'],
         'discount_price' => $data['discount_price'] ?? $product['discount_price'],
-        'discount_type' => $data['discount_type'] ?? $product['discount_type'],
+        'discount_type' => !empty($data['discount_price']) && empty($data['discount_type']) ? 'percentage' : ($data['discount_type'] ?? $product['discount_type']),
         'updated_by' => $user_id
     ];
 
@@ -599,6 +613,7 @@ if (!empty($variant['id'])) {
 
     // ================= RESPONSE =================
     $updated_product = $this->product_model->get_by_id($id);
+    $this->normalize_product_discount($updated_product);
     $updated_product['variants'] = $this->product_model->get_variants($id);
 
     success_response('Product updated successfully', $updated_product);
