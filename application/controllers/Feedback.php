@@ -7,6 +7,7 @@ class Feedback extends CI_Controller {
         parent::__construct();
         $this->load->model('Feedback_model');
         $this->load->model('Jwt_model');
+        $this->load->model('Employee_access_model');
         $this->load->helper('response');
     }
 
@@ -16,6 +17,21 @@ class Feedback extends CI_Controller {
     if (!in_array(intval($user->role), $allowed_roles)) return false;
     return $user;
 }
+
+    private function authorize($moduleKey, $action = 'view') {
+        $user = $this->Jwt_model->verify_token();
+        if (!$user) return unauthorized("Login required");
+
+        if (in_array((int)$user->role, [1, 2])) {
+            return $user;
+        }
+
+        if ((int)$user->role === 4 && $this->Employee_access_model->has_permission($user->employee_id ?? $user->uid, $moduleKey, $action)) {
+            return $user;
+        }
+
+        return unauthorized("Access denied");
+    }
 
  
     public function submit() {
@@ -46,11 +62,7 @@ class Feedback extends CI_Controller {
 
 
     public function get_all() {
-        $user = $this->Jwt_model->verify_token();
-
-        if (!$user || intval($user->role) !== 2) {
-            return unauthorized("Access denied");
-        }
+        $user = $this->authorize('feedback', 'view');
 
         $data = $this->Feedback_model->get_all();
         return success_response("Feedbacks fetched", $data);
@@ -58,11 +70,7 @@ class Feedback extends CI_Controller {
 
   
     public function update($id) {
-        $user = $this->Jwt_model->verify_token();
-
-        if (!$user || intval($user->role) !== 2) {
-            return unauthorized("Access denied");
-        }
+        $user = $this->authorize('feedback', 'edit');
 
         $input = json_decode(file_get_contents("php://input"), true);
 
@@ -82,11 +90,7 @@ class Feedback extends CI_Controller {
 
   
     public function toggle_status($id) {
-        $user = $this->Jwt_model->verify_token();
-
-        if (!$user || intval($user->role) !== 2) {
-            return unauthorized("Access denied");
-        }
+        $user = $this->authorize('feedback', 'status');
 
         $feedback = $this->Feedback_model->get_by_id($id);
 
@@ -110,11 +114,7 @@ class Feedback extends CI_Controller {
     }
 
     public function delete($id) {
-    $user = $this->Jwt_model->verify_token();
-
-    if (!$user || intval($user->role) !== 2) {
-        return unauthorized("Access denied");
-    }
+    $user = $this->authorize('feedback', 'delete');
 
     $feedback = $this->Feedback_model->get_by_id($id);
 

@@ -5,7 +5,23 @@ class Reviews extends CI_Controller {
         parent::__construct();
         $this->load->model('Review_model');
         $this->load->model('Jwt_model');
+        $this->load->model('Employee_access_model');
         $this->load->helper('response');
+    }
+
+    private function authorize($moduleKey, $action = 'view') {
+        $user = $this->Jwt_model->verify_token();
+        if (!$user) return unauthorized("Login required");
+
+        if (in_array((int)$user->role, [1, 2])) {
+            return $user;
+        }
+
+        if ((int)$user->role === 4 && $this->Employee_access_model->has_permission($user->employee_id ?? $user->uid, $moduleKey, $action)) {
+            return $user;
+        }
+
+        return unauthorized("Access denied");
     }
 
   
@@ -44,39 +60,34 @@ class Reviews extends CI_Controller {
 
 
 public function get_all() {
+    $this->authorize('reviews', 'view');
     $data = $this->Review_model->get_all();
     return success_response("All reviews", $data);
 }
 
 
 public function toggle($id) {
-    $user = $this->Jwt_model->verify_token();
-    if (!$user) return unauthorized("Login required");
+    $user = $this->authorize('reviews', 'status');
 
-  
     $review = $this->db->where('id', $id)->get('reviews')->row();
 
     if (!$review) return error_response("Review not found");
 
     $this->Review_model->toggle_status($id, $user->uid);
 
-   
     $this->Review_model->update_product_rating($review->product_id);
 
     return success_response("Status updated");
 }
 
 public function delete($id) {
-    $user = $this->Jwt_model->verify_token();
-    if (!$user) return unauthorized("Login required");
-
+    $user = $this->authorize('reviews', 'delete');
 
     $review = $this->db->where('id', $id)->get('reviews')->row();
 
     if (!$review) return error_response("Review not found");
 
     $this->Review_model->delete($id);
-
     $this->Review_model->update_product_rating($review->product_id);
 
     return success_response("Review deleted");
