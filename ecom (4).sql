@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 07, 2026 at 06:25 AM
+-- Generation Time: Jun 17, 2026 at 07:00 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.1.25
 
@@ -79,6 +79,8 @@ CREATE TABLE `employees` (
   `name` varchar(255) NOT NULL,
   `email` varchar(255) NOT NULL,
   `phone` varchar(50) NOT NULL,
+  `password` varchar(255) DEFAULT NULL,
+  `last_login_at` datetime DEFAULT NULL,
   `role` varchar(100) NOT NULL,
   `department` varchar(100) NOT NULL,
   `salary` decimal(12,2) NOT NULL,
@@ -89,6 +91,51 @@ CREATE TABLE `employees` (
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `employees`
+--
+
+INSERT INTO `employees` (`id`, `name`, `email`, `phone`, `password`, `last_login_at`, `role`, `department`, `salary`, `joined_date`, `status`, `created_by`, `updated_by`, `created_at`, `updated_at`) VALUES
+(2, 'Prabhakaran', 'sigmaprabhakaran@gmail.com', '6383786437', '$2y$10$jrMlDJhbEBanjOvlXUsszumgNUaiqhv6Pgw1qmL6hRlZk3fw8lYOi', '2026-06-16 10:48:47', 'Date Entry', 'Support', 12000.00, '2026-06-13', 'active', 5, NULL, '2026-06-13 10:41:41', '0000-00-00 00:00:00');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `employee_access`
+--
+
+CREATE TABLE `employee_access` (
+  `employee_id` int(10) UNSIGNED NOT NULL,
+  `module_key` varchar(100) NOT NULL,
+  `can_view` tinyint(1) NOT NULL DEFAULT 0,
+  `can_create` tinyint(1) NOT NULL DEFAULT 0,
+  `can_edit` tinyint(1) NOT NULL DEFAULT 0,
+  `can_delete` tinyint(1) NOT NULL DEFAULT 0,
+  `can_export` tinyint(1) NOT NULL DEFAULT 0,
+  `can_status` tinyint(1) NOT NULL DEFAULT 0,
+  `updated_by` int(11) DEFAULT NULL,
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `employee_access`
+--
+
+INSERT INTO `employee_access` (`employee_id`, `module_key`, `can_view`, `can_create`, `can_edit`, `can_delete`, `can_export`, `can_status`, `updated_by`, `updated_at`) VALUES
+(2, 'categories', 0, 0, 0, 0, 0, 0, 5, '2026-06-13 05:25:18'),
+(2, 'dashboard', 1, 0, 1, 0, 0, 1, 5, '2026-06-13 05:25:18'),
+(2, 'departments', 0, 0, 0, 0, 0, 0, 5, '2026-06-13 05:25:18'),
+(2, 'employees', 0, 0, 0, 0, 0, 0, 5, '2026-06-13 05:25:18'),
+(2, 'employee_roles', 0, 0, 0, 0, 0, 0, 5, '2026-06-13 05:25:18'),
+(2, 'feedback', 1, 0, 1, 0, 0, 1, 5, '2026-06-13 05:25:18'),
+(2, 'orders', 1, 0, 0, 0, 0, 0, 5, '2026-06-13 05:25:18'),
+(2, 'products', 0, 0, 0, 0, 0, 0, 5, '2026-06-13 05:25:18'),
+(2, 'reports', 0, 0, 0, 0, 0, 0, 5, '2026-06-13 05:25:18'),
+(2, 'reviews', 1, 0, 1, 0, 0, 1, 5, '2026-06-13 05:25:18'),
+(2, 'settings', 0, 0, 0, 0, 0, 0, 5, '2026-06-13 05:25:18'),
+(2, 'subcategories', 0, 0, 0, 0, 0, 0, 5, '2026-06-13 05:25:18'),
+(2, 'users', 0, 0, 0, 0, 0, 0, 5, '2026-06-13 05:25:18');
 
 -- --------------------------------------------------------
 
@@ -221,6 +268,7 @@ INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `product_name`, `vari
 CREATE TABLE `password_reset_tokens` (
   `id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
+  `employee_id` int(11) DEFAULT NULL,
   `token` varchar(255) NOT NULL,
   `expires_at` datetime NOT NULL,
   `used` tinyint(4) NOT NULL DEFAULT 0 COMMENT '0=Not Used, 1=Used',
@@ -231,20 +279,22 @@ CREATE TABLE `password_reset_tokens` (
 -- Dumping data for table `password_reset_tokens`
 --
 
-INSERT INTO `password_reset_tokens` (`id`, `user_id`, `token`, `expires_at`, `used`, `createdat`) VALUES
-(1, 2, 'f87b4a42586e28e97b34fdc22596269bcf8cc00788aac76c51ab792a6ad39b8d', '2026-03-22 18:35:54', 0, '2026-03-22 22:05:54'),
-(2, 2, 'bcce8a4dff41b4dfcb7bdbdac6e99988b12c67a22841a6f9c283d3b1693d6836', '2026-03-23 04:49:45', 0, '2026-03-23 08:19:45'),
-(3, 2, '77bd75ab91e6e109c1a07b73903db5d3c15cfe6f2a5d698c516f2f198735c14d', '2026-03-23 04:50:50', 0, '2026-03-23 08:20:50'),
-(4, 2, '872906', '2026-03-23 04:06:45', 0, '2026-03-23 08:31:45'),
-(5, 2, '705060', '2026-03-23 04:07:46', 1, '2026-03-23 08:32:46'),
-(6, 2, '780958', '2026-03-23 18:21:47', 1, '2026-03-23 22:46:47'),
-(7, 2, '777800', '2026-03-23 18:26:37', 1, '2026-03-23 22:51:37'),
-(8, 2, '801070', '2026-03-24 05:46:16', 1, '2026-03-24 10:11:16'),
-(9, 5, '179125', '2026-04-13 08:56:47', 0, '2026-04-13 12:21:47'),
-(10, 5, '693178', '2026-04-13 08:56:48', 0, '2026-04-13 12:21:48'),
-(11, 2, '787338', '2026-04-13 09:03:29', 0, '2026-04-13 12:28:29'),
-(12, 5, '588623', '2026-05-12 08:16:55', 1, '2026-05-12 11:41:55'),
-(13, 5, '593571', '2026-06-06 07:32:38', 1, '2026-06-06 10:57:38');
+INSERT INTO `password_reset_tokens` (`id`, `user_id`, `employee_id`, `token`, `expires_at`, `used`, `createdat`) VALUES
+(1, 2, NULL, 'f87b4a42586e28e97b34fdc22596269bcf8cc00788aac76c51ab792a6ad39b8d', '2026-03-22 18:35:54', 0, '2026-03-22 22:05:54'),
+(2, 2, NULL, 'bcce8a4dff41b4dfcb7bdbdac6e99988b12c67a22841a6f9c283d3b1693d6836', '2026-03-23 04:49:45', 0, '2026-03-23 08:19:45'),
+(3, 2, NULL, '77bd75ab91e6e109c1a07b73903db5d3c15cfe6f2a5d698c516f2f198735c14d', '2026-03-23 04:50:50', 0, '2026-03-23 08:20:50'),
+(4, 2, NULL, '872906', '2026-03-23 04:06:45', 0, '2026-03-23 08:31:45'),
+(5, 2, NULL, '705060', '2026-03-23 04:07:46', 1, '2026-03-23 08:32:46'),
+(6, 2, NULL, '780958', '2026-03-23 18:21:47', 1, '2026-03-23 22:46:47'),
+(7, 2, NULL, '777800', '2026-03-23 18:26:37', 1, '2026-03-23 22:51:37'),
+(8, 2, NULL, '801070', '2026-03-24 05:46:16', 1, '2026-03-24 10:11:16'),
+(9, 5, NULL, '179125', '2026-04-13 08:56:47', 0, '2026-04-13 12:21:47'),
+(10, 5, NULL, '693178', '2026-04-13 08:56:48', 0, '2026-04-13 12:21:48'),
+(11, 2, NULL, '787338', '2026-04-13 09:03:29', 0, '2026-04-13 12:28:29'),
+(12, 5, NULL, '588623', '2026-05-12 08:16:55', 1, '2026-05-12 11:41:55'),
+(13, 5, NULL, '593571', '2026-06-06 07:32:38', 1, '2026-06-06 10:57:38'),
+(14, 5, NULL, '661719', '2026-06-13 10:33:54', 1, '2026-06-13 10:28:54'),
+(15, 5, NULL, '641130', '2026-06-13 10:36:21', 1, '2026-06-13 10:31:21');
 
 -- --------------------------------------------------------
 
@@ -255,12 +305,16 @@ INSERT INTO `password_reset_tokens` (`id`, `user_id`, `token`, `expires_at`, `us
 CREATE TABLE `products` (
   `id` int(11) NOT NULL,
   `name` varchar(255) NOT NULL,
+  `slug` varchar(255) DEFAULT NULL,
   `description` text DEFAULT NULL,
   `category_id` int(11) DEFAULT NULL,
   `subcategory_id` int(11) DEFAULT NULL,
   `quantity` int(11) NOT NULL,
   `price` decimal(10,2) NOT NULL,
+  `discount_price` decimal(10,2) DEFAULT NULL,
+  `discount_type` enum('percent','fixed') DEFAULT NULL,
   `image` varchar(500) DEFAULT NULL,
+  `images` longtext DEFAULT NULL,
   `rating` decimal(3,2) DEFAULT 0.00,
   `review_count` int(11) DEFAULT 0,
   `gst` varchar(50) DEFAULT NULL,
@@ -278,11 +332,11 @@ CREATE TABLE `products` (
 -- Dumping data for table `products`
 --
 
-INSERT INTO `products` (`id`, `name`, `description`, `category_id`, `subcategory_id`, `quantity`, `price`, `image`, `rating`, `review_count`, `gst`, `weight`, `hsn_code`, `is_active`, `created_by`, `updated_by`, `created_at`, `updated_at`, `featured`) VALUES
-(4, 'Classical Smart watche', 'Stylish black smart watch with modern design and essential features. It comes with fitness tracking, heart rate monitoring, and long-lasting battery life. Perfect for daily use with a comfortable strap and sleek look', 1, 1, 30, 4100.00, NULL, 0.00, 0, '5', '400g', '5201', '1', 5, 5, '2026-04-01 16:28:41', '2026-04-04 12:08:37', 1),
-(5, 'Full Sleeve Shirt', 'Stylish and comfortable full sleeve shirt made from premium cotton fabric. Perfect for casual and office wear, featuring a modern fit, breathable material, and vibrant colors that stay fresh all day. Available in multiple Colors.', 2, 2, 22, 450.00, NULL, 5.00, 1, '5', '220g', '6205', '1', 5, 5, '2026-04-01 18:37:00', '2026-04-09 11:09:50', 1),
-(6, 'Wireless Bluetooth Speaker', 'Portable Bluetooth speaker with strong bass, wireless connectivity, and long battery backup. Perfect for travel and daily use.', 1, 3, 19, 2400.00, 'uploads/products/1775297192_OIP.webp', 0.00, 0, '18', '1kg', '8518', '1', 5, 5, '2026-04-04 11:42:49', '2026-04-15 07:16:15', 1),
-(7, 'HydraGlow Nourishing Body Lotion', 'A lightweight and deeply hydrating body lotion designed to nourish and protect your skin. This fragrance-free formula is perfect for sensitive skin, providing long-lasting moisture without irritation. Enriched with skin-loving ingredients, it absorbs quickly and leaves your skin soft, smooth, and naturally radiant.\n\nIdeal for daily use, this body lotion helps maintain healthy, hydrated skin throughout the day without any greasy residue.', 3, 4, 25, 400.00, 'uploads/products/1775299479_Natural Face Serum.jpg', 0.00, 0, '18', '200', '3304', '1', 5, 5, '2026-04-04 12:44:39', '2026-04-08 07:02:07', 1);
+INSERT INTO `products` (`id`, `name`, `slug`, `description`, `category_id`, `subcategory_id`, `quantity`, `price`, `discount_price`, `discount_type`, `image`, `images`, `rating`, `review_count`, `gst`, `weight`, `hsn_code`, `is_active`, `created_by`, `updated_by`, `created_at`, `updated_at`, `featured`) VALUES
+(4, 'Classical Smart watche', NULL, 'Stylish black smart watch with modern design and essential features. It comes with fitness tracking, heart rate monitoring, and long-lasting battery life. Perfect for daily use with a comfortable strap and sleek look', 1, 1, 30, 4100.00, 20.00, '', NULL, NULL, 0.00, 0, '5', '400g', '5201', '1', 5, 5, '2026-04-01 16:28:41', '2026-06-16 10:59:36', 1),
+(5, 'Full Sleeve Shirt', NULL, 'Stylish and comfortable full sleeve shirt made from premium cotton fabric. Perfect for casual and office wear, featuring a modern fit, breathable material, and vibrant colors that stay fresh all day. Available in multiple Colors.', 2, 2, 22, 450.00, 14.00, '', NULL, NULL, 5.00, 1, '5', '220g', '6205', '1', 5, 5, '2026-04-01 18:37:00', '2026-06-16 10:59:28', 1),
+(6, 'Wireless Bluetooth Speaker', NULL, 'Portable Bluetooth speaker with strong bass, wireless connectivity, and long battery backup. Perfect for travel and daily use.', 1, 3, 19, 2400.00, 15.00, '', 'uploads/products/1775297192_OIP.webp', NULL, 0.00, 0, '18', '1kg', '8518', '1', 5, 5, '2026-04-04 11:42:49', '2026-06-16 10:59:15', 1),
+(7, 'HydraGlow Nourishing Body Lotion', NULL, 'A lightweight and deeply hydrating body lotion designed to nourish and protect your skin. This fragrance-free formula is perfect for sensitive skin, providing long-lasting moisture without irritation. Enriched with skin-loving ingredients, it absorbs quickly and leaves your skin soft, smooth, and naturally radiant.\n\nIdeal for daily use, this body lotion helps maintain healthy, hydrated skin throughout the day without any greasy residue.', 3, 4, 25, 400.00, 10.00, '', 'uploads/products/1775299479_Natural Face Serum.jpg', NULL, 0.00, 0, '18', '200', '3304', '1', 5, 5, '2026-04-04 12:44:39', '2026-06-16 10:32:59', 1);
 
 -- --------------------------------------------------------
 
@@ -309,13 +363,13 @@ CREATE TABLE `product_variants` (
 --
 
 INSERT INTO `product_variants` (`id`, `product_id`, `sku`, `price`, `stock`, `image`, `is_active`, `created_by`, `updated_by`, `created_at`, `updated_at`) VALUES
-(104, 4, 'SM01', 4600.00, 20, 'uploads/products/1775297317_white.jpg', '1', 5, 5, '2026-04-04 12:08:37', '2026-04-04 12:08:37'),
-(105, 4, 'SM02', 4200.00, 14, 'uploads/products/1775297317_black new.webp', '1', 5, 5, '2026-04-04 12:08:37', '2026-04-04 12:08:37'),
-(106, 5, 'FS01', 400.00, 15, 'uploads/products/1775298386_green.webp', '1', 5, 5, '2026-04-04 12:09:04', '2026-04-06 19:32:29'),
-(107, 5, 'FS02', 420.00, 12, 'uploads/products/1775298386_navy blue.webp', '1', 5, 5, '2026-04-04 12:09:04', '2026-04-06 19:32:29'),
-(108, 5, 'FS03', 450.00, 12, 'uploads/products/1775298386_sky.webp', '1', 5, 5, '2026-04-04 12:09:04', '2026-04-04 12:26:26'),
-(109, 5, 'FS04', 500.00, 10, 'uploads/products/1775298386_pink.webp', '1', 5, 5, '2026-04-04 12:23:14', '2026-04-04 12:26:26'),
-(110, 5, 'FS05', 430.00, 20, 'uploads/products/1775298386_orange.webp', '1', 5, 5, '2026-04-04 12:24:27', '2026-04-06 15:53:55');
+(104, 4, 'SM01', 4600.00, 20, 'uploads/products/1775297317_white.jpg', '1', 5, 5, '2026-04-04 12:08:37', '2026-06-16 10:59:36'),
+(105, 4, 'SM02', 4200.00, 14, 'uploads/products/1775297317_black new.webp', '1', 5, 5, '2026-04-04 12:08:37', '2026-06-16 10:59:36'),
+(106, 5, 'FS01', 400.00, 15, 'uploads/products/1775298386_green.webp', '1', 5, 5, '2026-04-04 12:09:04', '2026-06-16 10:59:28'),
+(107, 5, 'FS02', 420.00, 12, 'uploads/products/1775298386_navy blue.webp', '1', 5, 5, '2026-04-04 12:09:04', '2026-06-16 10:59:28'),
+(108, 5, 'FS03', 450.00, 12, 'uploads/products/1775298386_sky.webp', '1', 5, 5, '2026-04-04 12:09:04', '2026-06-16 10:59:28'),
+(109, 5, 'FS04', 500.00, 10, 'uploads/products/1775298386_pink.webp', '1', 5, 5, '2026-04-04 12:23:14', '2026-06-16 10:59:28'),
+(110, 5, 'FS05', 430.00, 20, 'uploads/products/1775298386_orange.webp', '1', 5, 5, '2026-04-04 12:24:27', '2026-06-16 10:59:28');
 
 -- --------------------------------------------------------
 
@@ -437,9 +491,9 @@ CREATE TABLE `users` (
 
 INSERT INTO `users` (`id`, `name`, `email`, `place`, `phonenumber`, `password`, `google_id`, `role`, `createdby`, `updatedby`, `last_login_at`, `createdat`, `updatedat`, `is_enabled`) VALUES
 (1, 'Thrive Boost', 'thriveboosttech@gmail.com', 'sivakasi', '6383786437', '$2y$10$pTf941lweksalsmXjZhYaup5xEa/aksR0Ve13R6rZqbcFdBl.5riK', NULL, 1, 1, NULL, '2026-04-16 07:12:46', '2026-03-22 19:41:10', '2026-03-22 22:34:38', 1),
-(2, 'Prabha', 'viperprabhakaran@gmail.com', 'sivakasi', '6383786437', '$2y$10$ixF3UcwcoSyv8SIdBQMtk.ZmfLOsr/lnxbyu1G2gGHRaZfXgMMgKm', NULL, 3, NULL, NULL, '2026-04-16 05:52:13', '2026-03-22 20:14:11', '2026-04-16 14:52:13', 1),
+(2, 'Prabha', 'viperprabhakaran@gmail.com', 'sivakasi', '6383786437', '$2y$10$ixF3UcwcoSyv8SIdBQMtk.ZmfLOsr/lnxbyu1G2gGHRaZfXgMMgKm', NULL, 3, NULL, NULL, '2026-06-17 04:38:10', '2026-03-22 20:14:11', '2026-06-17 10:08:10', 1),
 (3, 'prabha', 'thriveprabha@gmail.com', NULL, NULL, '$2y$10$7pCPIEgSPLkqujOhoF.myec0WbeSpGMxNCWLWXlm90vg2Z/3H.Hha', NULL, 3, NULL, NULL, '2026-04-16 07:12:46', '2026-03-23 13:32:24', '2026-03-23 13:32:24', 1),
-(5, 'Prabha admin', 'thriveboostbill@gmail.com', 'Sivakasi', '6383786437', '$2y$10$4HLhTfGRXWHdcM6mhtobBO1ejg3Of5ZzFCB0pdT2ZD6BXojIBST3e', NULL, 2, NULL, NULL, '2026-06-06 01:58:24', '2026-03-23 00:00:00', '2026-06-06 10:58:24', 1),
+(5, 'Prabha admin', 'thriveboostbill@gmail.com', 'Sivakasi', '6383786437', '$2y$10$22gEv2pvnee5VydCBRkOQ.sgxHUxVdAHiQ6ZEN28HmX4EDOA.AVOq', NULL, 2, NULL, NULL, '2026-06-17 04:53:06', '2026-03-23 00:00:00', '2026-06-17 10:23:06', 1),
 (6, 'Ganesh Krishna', 'gk3946020@gmail.com', 'Srivi', '63802 49114', '$2y$10$w9DdfLslL228GYePxDxaA.cGh9i9E3bB3aJ0RqZAJeBvhlM8lfqx.', NULL, 2, NULL, NULL, '2026-04-16 07:12:46', '2026-03-23 00:00:00', '2026-04-13 11:32:28', 1);
 
 -- --------------------------------------------------------
@@ -461,13 +515,13 @@ CREATE TABLE `variant_attributes` (
 --
 
 INSERT INTO `variant_attributes` (`id`, `variant_id`, `name`, `value`, `created_at`) VALUES
-(71, 104, 'Color', 'White', '2026-04-04 12:08:37'),
-(72, 105, 'Color', 'Black', '2026-04-04 12:08:37'),
-(107, 106, 'Color', 'Green', '2026-04-04 12:26:26'),
-(108, 107, 'Color', 'navy Blue', '2026-04-04 12:26:26'),
-(109, 108, 'Color', 'Sky', '2026-04-04 12:26:26'),
-(110, 109, 'Color', 'Pink', '2026-04-04 12:26:26'),
-(111, 110, 'Color', 'Orange', '2026-04-04 12:26:26');
+(112, 106, 'Color', 'Green', '2026-06-16 10:59:28'),
+(113, 107, 'Color', 'navy Blue', '2026-06-16 10:59:28'),
+(114, 108, 'Color', 'Sky', '2026-06-16 10:59:28'),
+(115, 109, 'Color', 'Pink', '2026-06-16 10:59:28'),
+(116, 110, 'Color', 'Orange', '2026-06-16 10:59:28'),
+(117, 104, 'Color', 'White', '2026-06-16 10:59:36'),
+(118, 105, 'Color', 'Black', '2026-06-16 10:59:36');
 
 --
 -- Indexes for dumped tables
@@ -498,6 +552,12 @@ ALTER TABLE `employees`
   ADD KEY `idx_employees_status` (`status`),
   ADD KEY `idx_employees_created_by` (`created_by`),
   ADD KEY `idx_employees_updated_by` (`updated_by`);
+
+--
+-- Indexes for table `employee_access`
+--
+ALTER TABLE `employee_access`
+  ADD PRIMARY KEY (`employee_id`,`module_key`);
 
 --
 -- Indexes for table `employee_roles`
@@ -533,7 +593,8 @@ ALTER TABLE `password_reset_tokens`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `token` (`token`),
   ADD KEY `idx_user_id` (`user_id`),
-  ADD KEY `idx_token` (`token`);
+  ADD KEY `idx_token` (`token`),
+  ADD KEY `idx_employee_id` (`employee_id`);
 
 --
 -- Indexes for table `products`
@@ -613,7 +674,7 @@ ALTER TABLE `departments`
 -- AUTO_INCREMENT for table `employees`
 --
 ALTER TABLE `employees`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `employee_roles`
@@ -643,7 +704,7 @@ ALTER TABLE `order_items`
 -- AUTO_INCREMENT for table `password_reset_tokens`
 --
 ALTER TABLE `password_reset_tokens`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- AUTO_INCREMENT for table `products`
@@ -685,11 +746,17 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `variant_attributes`
 --
 ALTER TABLE `variant_attributes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=112;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=119;
 
 --
 -- Constraints for dumped tables
 --
+
+--
+-- Constraints for table `employee_access`
+--
+ALTER TABLE `employee_access`
+  ADD CONSTRAINT `fk_employee_access_employee` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `order_items`
