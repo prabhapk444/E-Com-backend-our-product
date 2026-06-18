@@ -7,6 +7,7 @@ class Dashboard extends CI_Controller {
         parent::__construct();
         $this->load->model('Dashboard_model');
         $this->load->model('Jwt_model');
+        $this->load->model('Employee_access_model');
     }
 
       private function check_role($allowed_roles = []) {
@@ -17,6 +18,21 @@ class Dashboard extends CI_Controller {
 
     return $user;
 }
+
+    private function authorize_employee($moduleKey, $action = 'view') {
+        $user = $this->Jwt_model->verify_token();
+        if (!$user) return unauthorized("Access denied");
+
+        if (in_array((int)$user->role, [1, 2])) {
+            return $user;
+        }
+
+        if ((int)$user->role === 4 && $this->Employee_access_model->has_permission($user->employee_id ?? $user->uid, $moduleKey, $action)) {
+            return $user;
+        }
+
+        return unauthorized("Access denied");
+    }
 
 
   public function stats() {
@@ -116,8 +132,7 @@ public function settings() {
 }
 
   public function employee_stats() {
-    $user = $this->Jwt_model->verify_token();
-    if (!$user) return unauthorized("Access denied");
+    $this->authorize_employee('dashboard', 'view');
 
     $data = [
       "totalOrders" => (int)$this->Dashboard_model->get_total_orders(),
@@ -131,8 +146,7 @@ public function settings() {
   }
 
   public function employee_orders() {
-    $user = $this->Jwt_model->verify_token();
-    if (!$user) return unauthorized("Access denied");
+    $this->authorize_employee('orders', 'view');
 
     $data = $this->Dashboard_model->get_recent_orders();
 

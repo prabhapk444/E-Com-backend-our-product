@@ -12,10 +12,19 @@ class Auth extends CI_Controller {
         parent::__construct();
         $this->load->model('User_model');
         $this->load->model('Jwt_model');
+        $this->load->model('Employee_access_model');
         $this->load->model('Google_oauth');
         $this->load->library('email_library');
         $this->load->helper('response');
         $this->load->helper('url');
+    }
+
+    private function employee_can($moduleKey, $action = 'view') {
+        $user = $this->Jwt_model->verify_token();
+        if (!$user) return unauthorized("Access denied");
+        if (in_array((int)$user->role, [1, 2])) return $user;
+        if ((int)$user->role === 4 && $this->Employee_access_model->has_permission($user->employee_id ?? $user->uid, $moduleKey, $action)) return $user;
+        return unauthorized("Access denied");
     }
 
     // REGISTER
@@ -426,10 +435,7 @@ public function delete_admin($id) {
 
 // Get all normal users (role = 3)
 public function get_users() {
-    $user = $this->Jwt_model->verify_token();
-    if (!$user || intval($user->role) !== 2) {
-        return unauthorized("Access denied");
-    }
+    $this->employee_can('users', 'view');
 
     $users = $this->db
         ->select('id, name, email, place, phonenumber, createdat, is_enabled')
@@ -442,12 +448,7 @@ public function get_users() {
 
 public function toggle_user_status($id)
 {
-    $user = $this->Jwt_model->verify_token();
-
-    // Allow admin + super admin
-    if (!$user || !in_array(intval($user->role), [1, 2])) {
-        return unauthorized("Access denied");
-    }
+    $this->employee_can('users', 'status');
 
     $this->load->model('User_model');
 

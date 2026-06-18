@@ -7,20 +7,27 @@ class Departments extends CI_Controller {
         parent::__construct();
         $this->load->model('Departments_model');
         $this->load->model('Jwt_model');
+        $this->load->model('Employee_access_model');
         $this->load->helper('response');
     }
 
-    private function auth() {
+    private function auth($moduleKey = null, $action = 'view') {
         $user = $this->Jwt_model->verify_token();
         if (!$user || isset($user->expired)) {
             send_error("Unauthorized", 401);
+        }
+        if ($moduleKey && !in_array((int)$user->role, [1, 2]) && !(int)$user->role === 4) {
+            send_error("Forbidden", 403);
+        }
+        if ($moduleKey && (int)$user->role === 4 && !$this->Employee_access_model->has_permission($user->employee_id ?? $user->uid, $moduleKey, $action)) {
+            send_error("Forbidden", 403);
         }
         return $user;
     }
 
     // GET all departments
     public function index() {
-        $this->auth();
+        $this->auth('departments', 'view');
 
         $search = $this->input->get('search', true);
         $page = max(1, (int)($this->input->get('page', true) ?? 1));
@@ -41,7 +48,7 @@ class Departments extends CI_Controller {
 
     // GET single department
     public function get_by_id($id) {
-        $this->auth();
+        $this->auth('departments', 'view');
 
         $department = $this->Departments_model->get_department_by_id((int)$id);
 
@@ -54,7 +61,7 @@ class Departments extends CI_Controller {
 
     // CREATE
     public function create() {
-        $this->auth();
+        $this->auth('departments', 'create');
 
         $input = json_decode(file_get_contents('php://input'), true);
 
@@ -85,7 +92,7 @@ class Departments extends CI_Controller {
 
     // UPDATE
     public function update($id) {
-        $this->auth();
+        $this->auth('departments', 'edit');
 
         $id = (int)$id;
 
@@ -123,7 +130,7 @@ class Departments extends CI_Controller {
 
     // DELETE
     public function delete($id) {
-        $this->auth();
+        $this->auth('departments', 'delete');
 
         $id = (int)$id;
 

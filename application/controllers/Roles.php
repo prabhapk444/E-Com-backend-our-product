@@ -10,12 +10,13 @@ class Roles extends CI_Controller {
 
         $this->load->model('Role_model');
         $this->load->model('Jwt_model');
+        $this->load->model('Employee_access_model');
         $this->load->helper('response');
 
         header("Content-Type: application/json");
     }
 
-private function check_role($allowed_roles = []) {
+private function check_role($allowed_roles = [], $moduleKey = null, $action = 'view') {
     $user = $this->Jwt_model->verify_token();
 
     if (!$user) {
@@ -23,6 +24,9 @@ private function check_role($allowed_roles = []) {
     }
 
     if (!empty($allowed_roles) && !in_array($user->role, $allowed_roles)) {
+        if ((int)$user->role === 4 && $moduleKey && $this->Employee_access_model->has_permission($user->employee_id ?? $user->uid, $moduleKey, $action)) {
+            return $user;
+        }
         forbidden('Access denied');
     }
 
@@ -33,7 +37,7 @@ private function check_role($allowed_roles = []) {
     // GET all roles
     public function index()
     {
-        $this->check_role();
+        $this->check_role([], 'employee_roles', 'view');
 
         $roles = $this->Role_model->get_all();
 
@@ -43,7 +47,7 @@ private function check_role($allowed_roles = []) {
     // CREATE role
     public function create()
     {
-        $this->check_role();
+        $this->check_role([], 'employee_roles', 'create');
 
         $data = json_decode(file_get_contents("php://input"), true);
 
@@ -63,7 +67,7 @@ if (!$data || !isset($data['name']) || empty(trim($data['name']))) {
     // UPDATE role
     public function update($id)
     {
-        $this->check_role();
+        $this->check_role([], 'employee_roles', 'edit');
 
         $data = json_decode(file_get_contents("php://input"), true);
 
@@ -87,7 +91,7 @@ if (!$data || !isset($data['name']) || empty(trim($data['name']))) {
     // DELETE role
     public function delete($id)
     {
-        $this->check_role();
+        $this->check_role([], 'employee_roles', 'delete');
 
         $exists = $this->Role_model->find($id);
 

@@ -7,20 +7,25 @@ class Reports extends CI_Controller {
         parent::__construct();
         $this->load->model('Reports_model');
           $this->load->model('Jwt_model');
+          $this->load->model('Employee_access_model');
     }
 
-    private function verify_admin() {
+    private function verify_admin($moduleKey = 'reports', $action = 'view') {
     $user = $this->Jwt_model->verify_token();
 
     if (!$user) {
         unauthorized("Token invalid or missing");
     }
 
-    if (!in_array((int)$user->role, [1,2])) {
-        forbidden("Only admin allowed");
+    if (in_array((int)$user->role, [1,2])) {
+        return $user;
     }
 
-    return $user;
+    if ((int)$user->role === 4 && $this->Employee_access_model->has_permission($user->employee_id ?? $user->uid, $moduleKey, $action)) {
+        return $user;
+    }
+
+    forbidden("Only admin allowed");
 }
 
     // Common Response Format

@@ -7,21 +7,27 @@ class Employees extends CI_Controller {
         parent::__construct();
         $this->load->model('Employee_model');
         $this->load->model('Jwt_model');
+        $this->load->model('Employee_access_model');
         $this->load->library('form_validation');
         $this->load->helper('response');
     }
 
-    private function auth() {
+    private function auth($moduleKey = null, $action = 'view') {
         $user = $this->Jwt_model->verify_token();
         if (!$user || isset($user->expired)) {
             send_error("Unauthorized", 401);
+        }
+        if ($moduleKey && !in_array((int)$user->role, [1, 2])) {
+            if ((int)$user->role !== 4 || !$this->Employee_access_model->has_permission($user->employee_id ?? $user->uid, $moduleKey, $action)) {
+                send_error("Forbidden", 403);
+            }
         }
         return $user;
     }
 
     // GET
     public function index() {
-        $this->auth();
+        $this->auth('employees', 'view');
 
         $filters = [
             'search' => $this->input->get('search', true),
@@ -36,7 +42,7 @@ class Employees extends CI_Controller {
 
     // CREATE
     public function store() {
-        $user = $this->auth();
+        $user = $this->auth('employees', 'create');
 
         $input = json_decode(file_get_contents("php://input"), true);
         if (!$input) {
@@ -77,7 +83,7 @@ class Employees extends CI_Controller {
 
     // UPDATE
     public function update($id) {
-        $user = $this->auth();
+        $user = $this->auth('employees', 'edit');
 
         $input = json_decode(file_get_contents("php://input"), true);
 
@@ -112,7 +118,7 @@ class Employees extends CI_Controller {
 
     // TOGGLE STATUS
     public function status($id) {
-        $user = $this->auth();
+        $user = $this->auth('employees', 'status');
 
         $employee = $this->Employee_model->get_by_id($id);
         if (!$employee) {
@@ -132,7 +138,7 @@ class Employees extends CI_Controller {
 
     // DELETE
     public function delete($id) {
-        $this->auth();
+        $this->auth('employees', 'delete');
 
         $employee = $this->Employee_model->get_by_id($id);
         if (!$employee) {

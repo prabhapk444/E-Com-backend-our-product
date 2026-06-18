@@ -7,6 +7,7 @@ class Subcategory extends CI_Controller {
         parent::__construct();
         $this->load->model('Subcategory_model');
         $this->load->model('Jwt_model');
+        $this->load->model('Employee_access_model');
         $this->load->helper('response'); 
     }
 
@@ -22,18 +23,28 @@ class Subcategory extends CI_Controller {
         return $user;
     }
 
+    private function authorize($moduleKey, $action = 'view') {
+        $user = $this->Jwt_model->verify_token();
+        if (!$user) return unauthorized("Access denied");
+        if (in_array((int)$user->role, [1, 2])) return $user;
+        if ((int)$user->role === 4 && $this->Employee_access_model->has_permission($user->employee_id ?? $user->uid, $moduleKey, $action)) return $user;
+        return unauthorized("Access denied");
+    }
+
 
     public function index() {
     return $this->get_all();
 }
 
     public function get_all() {
+        $this->authorize('subcategories', 'view');
         $data = $this->Subcategory_model->get_all();
         return success_response("Fetched", $data);
     }
 
   
     public function view($id) {
+        $this->authorize('subcategories', 'view');
         $sub = $this->Subcategory_model->get($id);
         if ($sub) {
             return success_response("Fetched", $sub);
@@ -44,7 +55,7 @@ class Subcategory extends CI_Controller {
 
 
     public function create() {
-        $user = $this->check_role([2]);
+        $user = $this->authorize('subcategories', 'create');
         if (!$user) return unauthorized("Access denied");
 
         $input = json_decode(file_get_contents("php://input"), true);
@@ -70,7 +81,7 @@ class Subcategory extends CI_Controller {
     }
 
     public function update($id) {
-        $user = $this->check_role([2]);
+        $user = $this->authorize('subcategories', 'edit');
         if (!$user) return unauthorized("Access denied");
 
         $input = json_decode(file_get_contents("php://input"), true);
@@ -97,7 +108,7 @@ class Subcategory extends CI_Controller {
 
 
     public function delete($id) {
-        $user = $this->check_role([2]);
+        $user = $this->authorize('subcategories', 'delete');
         if (!$user) return unauthorized("Access denied");
 
         $this->Subcategory_model->delete($id);
@@ -106,16 +117,8 @@ class Subcategory extends CI_Controller {
 
   
     public function toggle_status($id) {
-        $user = $this->Jwt_model->verify_token();
+        $user = $this->authorize('subcategories', 'status');
         if (!$user) return unauthorized("Access denied");
-
-        if ((int)$user->role === 2) {
-            $allowed = true;
-        } else {
-            $allowed = $this->hasEmployeeStatusPermission($user->employee_id ?? $user->uid, 'subcategories');
-        }
-
-        if (!$allowed) return unauthorized("Access denied");
 
         $sub = $this->Subcategory_model->get($id);
         if (!$sub) return error_response("Subcategory not found");

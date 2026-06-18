@@ -9,9 +9,18 @@ public function __construct() {
 
     $this->load->model('Settings_model');
     $this->load->model('Jwt_model');
+    $this->load->model('Employee_access_model');
     $this->load->helper('response');
     $this->load->library('upload');
 }
+
+    private function authorize($moduleKey, $action = 'view') {
+        $user = $this->Jwt_model->verify_token();
+        if (!$user) return unauthorized("Unauthorized");
+        if (in_array((int)$user->role, [1, 2])) return $user;
+        if ((int)$user->role === 4 && $this->Employee_access_model->has_permission($user->employee_id ?? $user->uid, $moduleKey, $action)) return $user;
+        return unauthorized("Access denied");
+    }
 
 
 private function uploadImage($field, $name) {
@@ -45,13 +54,7 @@ private function uploadImage($field, $name) {
     }
 }
     public function index() {
-    $user = $this->Jwt_model->verify_token();
-
-    if (!$user) return unauthorized("Unauthorized");
-
-    if (!in_array((int)$user->role, [2], true)) {
-    return unauthorized("Access denied");
-}
+    $this->authorize('settings', 'view');
 
     $data = $this->Settings_model->get();
 
@@ -59,14 +62,7 @@ private function uploadImage($field, $name) {
 }
 
   public function save() {
-    $user = $this->Jwt_model->verify_token();
-
-    if (!$user) return unauthorized("Unauthorized");
-
-  
-   if ((int)$user->role !== 2) {
-    return unauthorized("Access denied - Admin only");
-}
+    $user = $this->authorize('settings', 'edit');
 
     $post = $this->input->post();
 

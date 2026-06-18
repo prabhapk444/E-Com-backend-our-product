@@ -7,6 +7,7 @@ class Category extends CI_Controller {
         parent::__construct();
         $this->load->model('Category_model');
         $this->load->model('Jwt_model');
+        $this->load->model('Employee_access_model');
         $this->load->helper('response'); 
     }
 
@@ -18,15 +19,24 @@ class Category extends CI_Controller {
         return $user;
     }
 
-    // Get all categories - everyone can view
+    private function authorize($moduleKey, $action = 'view') {
+        $user = $this->Jwt_model->verify_token();
+        if (!$user) return unauthorized("Access denied");
+        if (in_array((int)$user->role, [1, 2])) return $user;
+        if ((int)$user->role === 4 && $this->Employee_access_model->has_permission($user->employee_id ?? $user->uid, $moduleKey, $action)) return $user;
+        return unauthorized("Access denied");
+    }
+
+    // Get all categories - role 2 or employee with view permission
     public function get_all() {
+        $this->authorize('categories', 'view');
         $data = $this->Category_model->get_all();
         return success_response("Fetched", $data);
     }
 
     // Create category - only role 2
     public function create() {
-        $user = $this->check_role([2]);
+        $user = $this->authorize('categories', 'create');
         if (!$user) return unauthorized("Access denied");
 
         $input = json_decode(file_get_contents("php://input"), true);
@@ -50,7 +60,7 @@ class Category extends CI_Controller {
 
     // Update category - only role 2
     public function update($id) {
-        $user = $this->check_role([2]);
+        $user = $this->authorize('categories', 'edit');
         if (!$user) return unauthorized("Access denied");
 
         $input = json_decode(file_get_contents("php://input"), true);
@@ -71,7 +81,7 @@ class Category extends CI_Controller {
 
     // Delete category - only role 2
     public function delete($id) {
-        $user = $this->check_role([2]);
+        $user = $this->authorize('categories', 'delete');
         if (!$user) return unauthorized("Access denied");
 
         $this->Category_model->delete($id);
@@ -81,16 +91,8 @@ class Category extends CI_Controller {
 
     // Toggle status - only role 2 or employee with status permission
     public function toggle_status($id) {
-        $user = $this->Jwt_model->verify_token();
+        $user = $this->authorize('categories', 'status');
         if (!$user) return unauthorized("Access denied");
-
-        if ((int)$user->role === 2) {
-            $allowed = true;
-        } else {
-            $allowed = $this->hasEmployeeStatusPermission($user->employee_id ?? $user->uid, 'categories');
-        }
-
-        if (!$allowed) return unauthorized("Access denied");
 
         $cat = $this->Category_model->get_by_id($id);
         if (!$cat) return error_response("Not found");
