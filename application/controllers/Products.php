@@ -74,6 +74,19 @@ class Products extends CI_Controller {
         return ['valid' => false, 'user' => $user, 'message' => 'Forbidden: You do not have permission'];
     }
 
+    private function check_product_permission($action = 'view') {
+        $permission = $this->authorize_product($action);
+        if (!$permission['valid']) {
+            if ($permission['message'] === 'Unauthorized') {
+                unauthorized('Authentication required');
+            } else {
+                forbidden($permission['message']);
+            }
+            return null;
+        }
+        return $permission['user'];
+    }
+
   
 private function upload_image($field_name, $folder = '')
 {
@@ -233,11 +246,8 @@ private function upload_image($field_name, $folder = '')
     }
 
     public function get_all_admin() {
-        $user = $this->get_current_user();
-        if (!$user) {
-            unauthorized('Authentication required');
-            return;
-        }
+        $user = $this->check_product_permission('view');
+        if (!$user) return;
 
         $page = (int)$this->input->get('page') ?: 1;
         $limit = (int)$this->input->get('limit') ?: 10;
@@ -288,11 +298,8 @@ private function upload_image($field_name, $folder = '')
     }
 
     public function get_admin($id) {
-        $user = $this->get_current_user();
-        if (!$user) {
-            unauthorized('Authentication required');
-            return;
-        }
+        $user = $this->check_product_permission('view');
+        if (!$user) return;
 
         $product = $this->product_model->get_by_id($id);
         
@@ -327,17 +334,9 @@ private function upload_image($field_name, $folder = '')
     }
 
     public function create() {
-        $permission = $this->has_permission('2');
-        if (!$permission['valid']) {
-            if ($permission['message'] === 'Unauthorized') {
-                unauthorized('Authentication required');
-            } else {
-                forbidden($permission['message']);
-            }
-            return;
-        }
+        $user = $this->check_product_permission('create');
+        if (!$user) return;
 
-        $user = $permission['user'];
         $user_id = isset($user->id) ? $user->id : (isset($user->user_id) ? $user->user_id : (isset($user->uid) ? $user->uid : null));
 
         $json_input = file_get_contents('php://input');
@@ -459,17 +458,9 @@ if (empty($data) || (!isset($data['name']) && isset($_POST['data']))) {
     }
 
     public function update($id) {
-    $permission = $this->has_permission('2');
-    if (!$permission['valid']) {
-        if ($permission['message'] === 'Unauthorized') {
-            unauthorized('Authentication required');
-        } else {
-            forbidden($permission['message']);
-        }
-        return;
-    }
+    $user = $this->check_product_permission('edit');
+    if (!$user) return;
 
-    $user = $permission['user'];
     $user_id = $user->id ?? $user->user_id ?? $user->uid ?? null;
 
     $product = $this->product_model->get_by_id($id);
@@ -636,15 +627,8 @@ if (!empty($variant['id'])) {
 }
 
     public function delete($id) {
-        $permission = $this->has_permission('2');
-        if (!$permission['valid']) {
-            if ($permission['message'] === 'Unauthorized') {
-                unauthorized('Authentication required');
-            } else {
-                forbidden($permission['message']);
-            }
-            return;
-        }
+        $user = $this->check_product_permission('delete');
+        if (!$user) return;
 
         $product = $this->product_model->get_by_id($id);
         if (!$product) {
@@ -686,20 +670,8 @@ if (!empty($variant['id'])) {
     }
 
     public function toggle_status($id) {
-        $user = $this->get_current_user();
-        if (!$user) {
-            unauthorized('Authentication required');
-            return;
-        }
-
-        if ((int)$user->role !== 2) {
-            $employeeId = $user->employee_id ?? $user->uid;
-            $allowed = $this->hasEmployeeStatusPermission($employeeId, 'products');
-            if (!$allowed) {
-                forbidden('You do not have permission to update product status');
-                return;
-            }
-        }
+        $user = $this->check_product_permission('status');
+        if (!$user) return;
 
         $result = $this->product_model->toggle_status($id);
 
@@ -728,15 +700,8 @@ if (!empty($variant['id'])) {
 
     // Delete a single variant
     public function delete_variant($id) {
-        $permission = $this->has_permission('2');
-        if (!$permission['valid']) {
-            if ($permission['message'] === 'Unauthorized') {
-                unauthorized('Authentication required');
-            } else {
-                forbidden($permission['message']);
-            }
-            return;
-        }
+        $user = $this->check_product_permission('edit');
+        if (!$user) return;
 
         $variant = $this->product_model->get_variant_by_id($id);
         if (!$variant) {

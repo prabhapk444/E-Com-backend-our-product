@@ -93,6 +93,11 @@ $route['dashboard/monthly-sales'] = 'dashboard/monthly_sales';
 $route['dashboard/low-stock'] = 'dashboard/low_stock';
 $route['dashboard/top-products'] = 'dashboard/top_products';
 $route['dashboard/settings'] = 'dashboard/settings';
+$route['api/dashboard/top-products'] = 'dashboard/top_products';
+$route['api/dashboard/settings'] = 'dashboard/settings';
+$route['api/reports/monthly-sales'] = 'reports/monthly_sales';
+$route['api/reports/order-status'] = 'reports/order_status';
+$route['api/reports/top-products'] = 'reports/top_products';
 
 
 
