@@ -15,6 +15,7 @@ class Products extends CI_Controller {
         parent::__construct();
         $this->load->model('product_model');
         $this->load->model('jwt_model');
+        $this->load->model('employee_access_model');
         $this->load->helper('response_helper');
         $this->load->database();
         
@@ -56,6 +57,21 @@ class Products extends CI_Controller {
         }
 
         return ['valid' => true, 'user' => $user];
+    }
+
+    private function authorize_product($action = 'view') {
+        $user = $this->get_current_user();
+        if (!$user) return ['valid' => false, 'user' => null, 'message' => 'Unauthorized'];
+
+        if (in_array((int)$user->role, [1, 2, 3])) {
+            return ['valid' => true, 'user' => $user];
+        }
+
+        if ((int)$user->role === 4 && $this->employee_access_model->has_permission($user->employee_id ?? $user->uid, 'products', $action)) {
+            return ['valid' => true, 'user' => $user];
+        }
+
+        return ['valid' => false, 'user' => $user, 'message' => 'Forbidden: You do not have permission'];
     }
 
   
