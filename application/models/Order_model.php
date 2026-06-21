@@ -136,6 +136,18 @@ class Order_model extends CI_Model {
         return $query->result_array();
     }
 
+    public function increment_coupon_usage($coupon_id) {
+        if (!$coupon_id) return false;
+        $this->db->set('used_count', 'used_count + 1', FALSE);
+        return $this->db->where('id', $coupon_id)->update('coupons');
+    }
+
+    public function decrement_coupon_usage($coupon_id) {
+        if (!$coupon_id) return false;
+        $this->db->set('used_count', 'GREATEST(used_count - 1, 0)', FALSE);
+        return $this->db->where('id', $coupon_id)->update('coupons');
+    }
+
   public function cancel_order($id) {
     $items = $this->get_items($id);
 

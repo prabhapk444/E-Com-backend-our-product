@@ -297,6 +297,9 @@ class Orders extends CI_Controller {
         // Calculate tax (use frontend values or default to 0)
         $cgst = isset($data['cgst']) ? floatval($data['cgst']) : 0;
         $sgst = isset($data['sgst']) ? floatval($data['sgst']) : 0;
+        $coupon_code = isset($data['couponCode']) ? strtoupper(trim($data['couponCode'])) : null;
+        $coupon_discount = isset($data['couponDiscount']) ? floatval($data['couponDiscount']) : 0;
+        $coupon_id = isset($data['couponId']) ? intval($data['couponId']) : null;
         $total = isset($data['total']) ? floatval($data['total']) : ($subtotal + $cgst + $sgst);
 
         // Payment method and status
@@ -304,7 +307,7 @@ class Orders extends CI_Controller {
         $payment_status = isset($data['paymentStatus']) ? $data['paymentStatus'] : ($payment_method === 'online' ? 'pending' : 'cod');
         $payment_id = isset($data['paymentId']) ? $data['paymentId'] : null;
 
-        // Prepare order data (without user_id - not in original table schema)
+        $order_columns = $this->db->list_fields('orders');
         $order_data = [
             'order_id' => $this->order_model->generate_order_id(),
             'name' => $name,
@@ -317,6 +320,9 @@ class Orders extends CI_Controller {
             'subtotal' => $subtotal,
             'cgst' => $cgst,
             'sgst' => $sgst,
+            'coupon_code' => in_array('coupon_code', $order_columns) ? $coupon_code : null,
+            'coupon_discount' => in_array('coupon_discount', $order_columns) ? $coupon_discount : 0,
+            'coupon_id' => in_array('coupon_id', $order_columns) ? $coupon_id : null,
             'total' => $total,
             'payment_method' => $payment_method,
             'payment_id' => $payment_id,
@@ -328,6 +334,10 @@ class Orders extends CI_Controller {
         $order_id = $this->order_model->create_order($order_data, $items_data);
 
         if ($order_id) {
+            if ($coupon_id && $this->db->table_exists('coupons') && in_array('used_count', $this->db->list_fields('coupons'))) {
+                $this->order_model->increment_coupon_usage($coupon_id);
+            }
+
             $order = $this->order_model->get_by_id($order_id);
             $items = $this->order_model->get_items($order_id);
             
@@ -751,6 +761,10 @@ public function cancel($order_identifier) {
     $result = $this->order_model->cancel_order($order['id']); // note: use numeric id
 
     if ($result) {
+        if (!empty($order['coupon_id']) && $this->db->table_exists('coupons') && in_array('used_count', $this->db->list_fields('coupons'))) {
+            $this->order_model->decrement_coupon_usage($order['coupon_id']);
+        }
+
         $order = $this->order_model->get_by_id($order['id']);
         send_success($order, 'Order cancelled successfully');
     } else {

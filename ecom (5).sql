@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 17, 2026 at 07:00 AM
+-- Generation Time: Jun 21, 2026 at 05:59 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.1.25
 
@@ -44,7 +44,52 @@ CREATE TABLE `categories` (
 INSERT INTO `categories` (`id`, `name`, `is_enabled`, `createdby`, `updatedby`, `createdat`, `updatedat`) VALUES
 (1, 'Electronics', 1, 5, 5, '2026-03-24 05:21:11', '2026-03-25 06:09:42'),
 (2, 'Men', 1, 5, 5, '2026-04-01 10:10:22', '2026-04-01 10:14:52'),
-(3, 'Beauty & Personal Care', 1, 5, NULL, '2026-04-04 10:43:24', NULL);
+(3, 'Beauty & Personal Care', 1, 5, 5, '2026-04-04 10:43:24', '2026-06-18 17:37:23');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `coupons`
+--
+
+CREATE TABLE `coupons` (
+  `id` int(11) NOT NULL,
+  `code` varchar(50) NOT NULL,
+  `description` text DEFAULT NULL,
+  `discount_type` enum('percentage','fixed') NOT NULL DEFAULT 'percentage',
+  `discount_value` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `min_order_amount` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `max_discount_amount` decimal(10,2) DEFAULT NULL,
+  `usage_limit` int(11) DEFAULT NULL,
+  `used_count` int(11) NOT NULL DEFAULT 0,
+  `starts_at` datetime DEFAULT NULL,
+  `expires_at` datetime DEFAULT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `created_at` datetime DEFAULT current_timestamp(),
+  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `coupon_categories`
+--
+
+CREATE TABLE `coupon_categories` (
+  `coupon_id` int(11) NOT NULL,
+  `category_id` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `coupon_products`
+--
+
+CREATE TABLE `coupon_products` (
+  `coupon_id` int(11) NOT NULL,
+  `product_id` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -97,7 +142,7 @@ CREATE TABLE `employees` (
 --
 
 INSERT INTO `employees` (`id`, `name`, `email`, `phone`, `password`, `last_login_at`, `role`, `department`, `salary`, `joined_date`, `status`, `created_by`, `updated_by`, `created_at`, `updated_at`) VALUES
-(2, 'Prabhakaran', 'sigmaprabhakaran@gmail.com', '6383786437', '$2y$10$jrMlDJhbEBanjOvlXUsszumgNUaiqhv6Pgw1qmL6hRlZk3fw8lYOi', '2026-06-16 10:48:47', 'Date Entry', 'Support', 12000.00, '2026-06-13', 'active', 5, NULL, '2026-06-13 10:41:41', '0000-00-00 00:00:00');
+(2, 'Prabhakaran', 'sigmaprabhakaran@gmail.com', '6383786437', '$2y$10$jrMlDJhbEBanjOvlXUsszumgNUaiqhv6Pgw1qmL6hRlZk3fw8lYOi', '2026-06-21 09:26:40', 'Date Entry', 'Support', 12000.00, '2026-06-13', 'active', 5, NULL, '2026-06-13 10:41:41', '0000-00-00 00:00:00');
 
 -- --------------------------------------------------------
 
@@ -123,19 +168,19 @@ CREATE TABLE `employee_access` (
 --
 
 INSERT INTO `employee_access` (`employee_id`, `module_key`, `can_view`, `can_create`, `can_edit`, `can_delete`, `can_export`, `can_status`, `updated_by`, `updated_at`) VALUES
-(2, 'categories', 0, 0, 0, 0, 0, 0, 5, '2026-06-13 05:25:18'),
-(2, 'dashboard', 1, 0, 1, 0, 0, 1, 5, '2026-06-13 05:25:18'),
-(2, 'departments', 0, 0, 0, 0, 0, 0, 5, '2026-06-13 05:25:18'),
-(2, 'employees', 0, 0, 0, 0, 0, 0, 5, '2026-06-13 05:25:18'),
-(2, 'employee_roles', 0, 0, 0, 0, 0, 0, 5, '2026-06-13 05:25:18'),
-(2, 'feedback', 1, 0, 1, 0, 0, 1, 5, '2026-06-13 05:25:18'),
-(2, 'orders', 1, 0, 0, 0, 0, 0, 5, '2026-06-13 05:25:18'),
-(2, 'products', 0, 0, 0, 0, 0, 0, 5, '2026-06-13 05:25:18'),
-(2, 'reports', 0, 0, 0, 0, 0, 0, 5, '2026-06-13 05:25:18'),
-(2, 'reviews', 1, 0, 1, 0, 0, 1, 5, '2026-06-13 05:25:18'),
-(2, 'settings', 0, 0, 0, 0, 0, 0, 5, '2026-06-13 05:25:18'),
-(2, 'subcategories', 0, 0, 0, 0, 0, 0, 5, '2026-06-13 05:25:18'),
-(2, 'users', 0, 0, 0, 0, 0, 0, 5, '2026-06-13 05:25:18');
+(2, 'categories', 0, 0, 0, 0, 0, 0, 5, '2026-06-19 05:25:35'),
+(2, 'dashboard', 1, 0, 0, 0, 0, 0, 5, '2026-06-19 05:25:35'),
+(2, 'departments', 0, 0, 0, 0, 0, 0, 5, '2026-06-19 05:25:35'),
+(2, 'employees', 0, 0, 0, 0, 0, 0, 5, '2026-06-19 05:25:35'),
+(2, 'employee_roles', 0, 0, 0, 0, 0, 0, 5, '2026-06-19 05:25:35'),
+(2, 'feedback', 1, 0, 0, 0, 0, 0, 5, '2026-06-19 05:25:35'),
+(2, 'orders', 1, 0, 0, 0, 0, 0, 5, '2026-06-19 05:25:35'),
+(2, 'products', 0, 0, 0, 0, 0, 0, 5, '2026-06-19 05:25:35'),
+(2, 'reports', 0, 0, 0, 0, 0, 0, 5, '2026-06-19 05:25:35'),
+(2, 'reviews', 1, 0, 0, 0, 0, 0, 5, '2026-06-19 05:25:35'),
+(2, 'settings', 0, 0, 0, 0, 0, 0, 5, '2026-06-19 05:25:35'),
+(2, 'subcategories', 0, 0, 0, 0, 0, 0, 5, '2026-06-19 05:25:35'),
+(2, 'users', 1, 0, 0, 0, 0, 0, 5, '2026-06-19 05:25:35');
 
 -- --------------------------------------------------------
 
@@ -186,7 +231,7 @@ CREATE TABLE `feedbacks` (
 --
 
 INSERT INTO `feedbacks` (`id`, `name`, `phone`, `place`, `message`, `rating`, `is_enabled`, `createdby`, `updatedby`, `createdat`, `updatedat`) VALUES
-(1, 'Prabhakaran', '6383786437', 'sivakasi', 'nice products i like it', 5, 1, 1, NULL, '2026-03-24 10:18:28', '2026-03-24 10:18:28');
+(1, 'Prabhakaran', '6383786437', 'sivakasi', 'nice products i like it', 5, 1, 1, NULL, '2026-03-24 10:18:28', '2026-06-18 22:57:49');
 
 -- --------------------------------------------------------
 
@@ -207,6 +252,9 @@ CREATE TABLE `orders` (
   `subtotal` decimal(10,2) NOT NULL,
   `cgst` decimal(10,2) DEFAULT 0.00,
   `sgst` decimal(10,2) DEFAULT 0.00,
+  `coupon_code` varchar(50) DEFAULT NULL,
+  `coupon_discount` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `coupon_id` int(11) DEFAULT NULL,
   `total` decimal(10,2) NOT NULL,
   `payment_method` enum('online','cod') NOT NULL,
   `payment_id` varchar(100) DEFAULT NULL,
@@ -221,11 +269,11 @@ CREATE TABLE `orders` (
 -- Dumping data for table `orders`
 --
 
-INSERT INTO `orders` (`id`, `order_id`, `name`, `email`, `phone`, `address`, `city`, `state`, `pincode`, `subtotal`, `cgst`, `sgst`, `total`, `payment_method`, `payment_id`, `payment_status`, `status`, `updated_by`, `updated_at`, `created_at`) VALUES
-(4, 'ORD-69D0EBE9637D4', 'S Prabhakaran', 'viperprabhakaran@gmail.com', '6383786437', '11,sedan kinatru street,thiruthangal', 'sivakasi', 'Tamil Nadu', '626130', 8149.00, 203.73, 203.73, 8556.45, 'cod', NULL, 'cod', 'delivered', NULL, '2026-04-06 09:37:37', '2026-04-04 10:46:01'),
-(5, 'ORD-69D143AAF0AFE', 'S Prabhakaran', 'viperprabhakaran@gmail.com', '6383786437', '11,sedan kinatru street,thiruthangal', 'sivakasi', 'Tamil Nadu', '626130', 1.00, 0.03, 0.03, 1.05, 'online', 'pay_SZUSmJw6ETX6Le', 'paid', 'delivered', NULL, '2026-04-06 10:04:36', '2026-04-04 17:00:26'),
-(6, 'ORD-69D389D4C90C4', 'S Prabhakaran', 'viperprabhakaran@gmail.com', '6383786437', '11,sedan kinatru street,thiruthangal', 'sivakasi', 'Tamil Nadu', '626130', 1640.00, 41.00, 41.00, 1722.00, 'cod', NULL, 'cod', 'cancelled', NULL, '2026-04-06 14:02:29', '2026-04-06 10:24:20'),
-(7, 'ORD-69D5EA2D344BF', 'S Prabhakaran', 'viperprabhakaran@gmail.com', '6383786437', '11,sedan kinatru street,thiruthangal', 'sivakasi', 'Tamil Nadu', '626130', 2400.00, 60.00, 60.00, 2520.00, 'cod', NULL, 'cod', 'delivered', NULL, '2026-04-14 06:44:51', '2026-04-08 05:39:57');
+INSERT INTO `orders` (`id`, `order_id`, `name`, `email`, `phone`, `address`, `city`, `state`, `pincode`, `subtotal`, `cgst`, `sgst`, `coupon_code`, `coupon_discount`, `coupon_id`, `total`, `payment_method`, `payment_id`, `payment_status`, `status`, `updated_by`, `updated_at`, `created_at`) VALUES
+(4, 'ORD-69D0EBE9637D4', 'S Prabhakaran', 'viperprabhakaran@gmail.com', '6383786437', '11,sedan kinatru street,thiruthangal', 'sivakasi', 'Tamil Nadu', '626130', 8149.00, 203.73, 203.73, NULL, 0.00, NULL, 8556.45, 'cod', NULL, 'cod', 'delivered', NULL, '2026-04-06 09:37:37', '2026-04-04 10:46:01'),
+(5, 'ORD-69D143AAF0AFE', 'S Prabhakaran', 'viperprabhakaran@gmail.com', '6383786437', '11,sedan kinatru street,thiruthangal', 'sivakasi', 'Tamil Nadu', '626130', 1.00, 0.03, 0.03, NULL, 0.00, NULL, 1.05, 'online', 'pay_SZUSmJw6ETX6Le', 'paid', 'delivered', NULL, '2026-04-06 10:04:36', '2026-04-04 17:00:26'),
+(6, 'ORD-69D389D4C90C4', 'S Prabhakaran', 'viperprabhakaran@gmail.com', '6383786437', '11,sedan kinatru street,thiruthangal', 'sivakasi', 'Tamil Nadu', '626130', 1640.00, 41.00, 41.00, NULL, 0.00, NULL, 1722.00, 'cod', NULL, 'cod', 'delivered', 2, '2026-06-18 17:40:51', '2026-04-06 10:24:20'),
+(7, 'ORD-69D5EA2D344BF', 'S Prabhakaran', 'viperprabhakaran@gmail.com', '6383786437', '11,sedan kinatru street,thiruthangal', 'sivakasi', 'Tamil Nadu', '626130', 2400.00, 60.00, 60.00, NULL, 0.00, NULL, 2520.00, 'cod', NULL, 'cod', 'delivered', NULL, '2026-04-14 06:44:51', '2026-04-08 05:39:57');
 
 -- --------------------------------------------------------
 
@@ -334,9 +382,9 @@ CREATE TABLE `products` (
 
 INSERT INTO `products` (`id`, `name`, `slug`, `description`, `category_id`, `subcategory_id`, `quantity`, `price`, `discount_price`, `discount_type`, `image`, `images`, `rating`, `review_count`, `gst`, `weight`, `hsn_code`, `is_active`, `created_by`, `updated_by`, `created_at`, `updated_at`, `featured`) VALUES
 (4, 'Classical Smart watche', NULL, 'Stylish black smart watch with modern design and essential features. It comes with fitness tracking, heart rate monitoring, and long-lasting battery life. Perfect for daily use with a comfortable strap and sleek look', 1, 1, 30, 4100.00, 20.00, '', NULL, NULL, 0.00, 0, '5', '400g', '5201', '1', 5, 5, '2026-04-01 16:28:41', '2026-06-16 10:59:36', 1),
-(5, 'Full Sleeve Shirt', NULL, 'Stylish and comfortable full sleeve shirt made from premium cotton fabric. Perfect for casual and office wear, featuring a modern fit, breathable material, and vibrant colors that stay fresh all day. Available in multiple Colors.', 2, 2, 22, 450.00, 14.00, '', NULL, NULL, 5.00, 1, '5', '220g', '6205', '1', 5, 5, '2026-04-01 18:37:00', '2026-06-16 10:59:28', 1),
+(5, 'Full Sleeve Shirt', NULL, 'Stylish and comfortable full sleeve shirt made from premium cotton fabric. Perfect for casual and office wear, featuring a modern fit, breathable material, and vibrant colors that stay fresh all day. Available in multiple Colors.', 2, 2, 22, 450.00, 14.00, '', NULL, NULL, 5.00, 1, '5', '220g', '6205', '1', 5, 5, '2026-04-01 18:37:00', '2026-06-18 22:45:02', 1),
 (6, 'Wireless Bluetooth Speaker', NULL, 'Portable Bluetooth speaker with strong bass, wireless connectivity, and long battery backup. Perfect for travel and daily use.', 1, 3, 19, 2400.00, 15.00, '', 'uploads/products/1775297192_OIP.webp', NULL, 0.00, 0, '18', '1kg', '8518', '1', 5, 5, '2026-04-04 11:42:49', '2026-06-16 10:59:15', 1),
-(7, 'HydraGlow Nourishing Body Lotion', NULL, 'A lightweight and deeply hydrating body lotion designed to nourish and protect your skin. This fragrance-free formula is perfect for sensitive skin, providing long-lasting moisture without irritation. Enriched with skin-loving ingredients, it absorbs quickly and leaves your skin soft, smooth, and naturally radiant.\n\nIdeal for daily use, this body lotion helps maintain healthy, hydrated skin throughout the day without any greasy residue.', 3, 4, 25, 400.00, 10.00, '', 'uploads/products/1775299479_Natural Face Serum.jpg', NULL, 0.00, 0, '18', '200', '3304', '1', 5, 5, '2026-04-04 12:44:39', '2026-06-16 10:32:59', 1);
+(7, 'HydraGlow Nourishing Body Lotion', NULL, 'A lightweight and deeply hydrating body lotion designed to nourish and protect your skin. This fragrance-free formula is perfect for sensitive skin, providing long-lasting moisture without irritation. Enriched with skin-loving ingredients, it absorbs quickly and leaves your skin soft, smooth, and naturally radiant.\n\nIdeal for daily use, this body lotion helps maintain healthy, hydrated skin throughout the day without any greasy residue.', 3, 4, 25, 400.00, 10.00, '', 'uploads/products/1775299479_Natural Face Serum.jpg', NULL, 0.00, 0, '18', '200', '3304', '1', 5, 5, '2026-04-04 12:44:39', '2026-06-18 22:55:06', 1);
 
 -- --------------------------------------------------------
 
@@ -395,7 +443,7 @@ CREATE TABLE `reviews` (
 --
 
 INSERT INTO `reviews` (`id`, `product_id`, `user_id`, `rating`, `title`, `message`, `is_enabled`, `created_at`, `updated_at`, `updatedby`) VALUES
-(1, 5, 2, 5, 'nice produts', 'i love this collection', 1, '2026-04-02 06:10:52', '2026-04-09 05:39:50', 5);
+(1, 5, 2, 5, 'nice produts', 'i love this collection', 1, '2026-04-02 06:10:52', '2026-06-18 17:15:02', 5);
 
 -- --------------------------------------------------------
 
@@ -491,9 +539,9 @@ CREATE TABLE `users` (
 
 INSERT INTO `users` (`id`, `name`, `email`, `place`, `phonenumber`, `password`, `google_id`, `role`, `createdby`, `updatedby`, `last_login_at`, `createdat`, `updatedat`, `is_enabled`) VALUES
 (1, 'Thrive Boost', 'thriveboosttech@gmail.com', 'sivakasi', '6383786437', '$2y$10$pTf941lweksalsmXjZhYaup5xEa/aksR0Ve13R6rZqbcFdBl.5riK', NULL, 1, 1, NULL, '2026-04-16 07:12:46', '2026-03-22 19:41:10', '2026-03-22 22:34:38', 1),
-(2, 'Prabha', 'viperprabhakaran@gmail.com', 'sivakasi', '6383786437', '$2y$10$ixF3UcwcoSyv8SIdBQMtk.ZmfLOsr/lnxbyu1G2gGHRaZfXgMMgKm', NULL, 3, NULL, NULL, '2026-06-17 04:38:10', '2026-03-22 20:14:11', '2026-06-17 10:08:10', 1),
+(2, 'Prabha', 'viperprabhakaran@gmail.com', 'sivakasi', '6383786437', '$2y$10$ixF3UcwcoSyv8SIdBQMtk.ZmfLOsr/lnxbyu1G2gGHRaZfXgMMgKm', NULL, 3, NULL, NULL, '2026-06-19 06:12:59', '2026-03-22 20:14:11', '2026-06-19 11:42:59', 1),
 (3, 'prabha', 'thriveprabha@gmail.com', NULL, NULL, '$2y$10$7pCPIEgSPLkqujOhoF.myec0WbeSpGMxNCWLWXlm90vg2Z/3H.Hha', NULL, 3, NULL, NULL, '2026-04-16 07:12:46', '2026-03-23 13:32:24', '2026-03-23 13:32:24', 1),
-(5, 'Prabha admin', 'thriveboostbill@gmail.com', 'Sivakasi', '6383786437', '$2y$10$22gEv2pvnee5VydCBRkOQ.sgxHUxVdAHiQ6ZEN28HmX4EDOA.AVOq', NULL, 2, NULL, NULL, '2026-06-17 04:53:06', '2026-03-23 00:00:00', '2026-06-17 10:23:06', 1),
+(5, 'Prabha admin', 'thriveboostbill@gmail.com', 'Sivakasi', '6383786437', '$2y$10$22gEv2pvnee5VydCBRkOQ.sgxHUxVdAHiQ6ZEN28HmX4EDOA.AVOq', NULL, 2, NULL, NULL, '2026-06-21 03:52:56', '2026-03-23 00:00:00', '2026-06-21 09:22:56', 1),
 (6, 'Ganesh Krishna', 'gk3946020@gmail.com', 'Srivi', '63802 49114', '$2y$10$w9DdfLslL228GYePxDxaA.cGh9i9E3bB3aJ0RqZAJeBvhlM8lfqx.', NULL, 2, NULL, NULL, '2026-04-16 07:12:46', '2026-03-23 00:00:00', '2026-04-13 11:32:28', 1);
 
 -- --------------------------------------------------------
@@ -533,6 +581,27 @@ INSERT INTO `variant_attributes` (`id`, `variant_id`, `name`, `value`, `created_
 ALTER TABLE `categories`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `name` (`name`);
+
+--
+-- Indexes for table `coupons`
+--
+ALTER TABLE `coupons`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `coupons_code_unique` (`code`);
+
+--
+-- Indexes for table `coupon_categories`
+--
+ALTER TABLE `coupon_categories`
+  ADD PRIMARY KEY (`coupon_id`,`category_id`),
+  ADD KEY `coupon_categories_category_id` (`category_id`);
+
+--
+-- Indexes for table `coupon_products`
+--
+ALTER TABLE `coupon_products`
+  ADD PRIMARY KEY (`coupon_id`,`product_id`),
+  ADD KEY `coupon_products_product_id` (`product_id`);
 
 --
 -- Indexes for table `departments`
@@ -665,6 +734,12 @@ ALTER TABLE `categories`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
+-- AUTO_INCREMENT for table `coupons`
+--
+ALTER TABLE `coupons`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `departments`
 --
 ALTER TABLE `departments`
@@ -751,6 +826,20 @@ ALTER TABLE `variant_attributes`
 --
 -- Constraints for dumped tables
 --
+
+--
+-- Constraints for table `coupon_categories`
+--
+ALTER TABLE `coupon_categories`
+  ADD CONSTRAINT `coupon_categories_category_id_fk` FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `coupon_categories_coupon_id_fk` FOREIGN KEY (`coupon_id`) REFERENCES `coupons` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `coupon_products`
+--
+ALTER TABLE `coupon_products`
+  ADD CONSTRAINT `coupon_products_coupon_id_fk` FOREIGN KEY (`coupon_id`) REFERENCES `coupons` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `coupon_products_product_id_fk` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `employee_access`

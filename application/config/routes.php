@@ -181,8 +181,17 @@ $route['api/admin/orders/status/(:any)'] = 'orders/by_status/$1';
 $route['api/admin/orders/(:num)'] = 'orders/get_admin/$1';
 $route['api/admin/orders/stats'] = 'orders/stats';
 
+$route['api/coupons']['GET'] = 'coupons/index';
+$route['api/coupons']['POST'] = 'coupons/create';
+$route['api/coupons/validate']['POST'] = 'coupons/validate';
+$route['api/coupons/validate']['GET'] = 'coupons/validate';
+$route['api/coupons/public']['GET'] = 'coupons/public_coupons';
+$route['api/coupons/(:num)']['GET'] = 'coupons/get/$1';
+$route['api/coupons/(:num)']['PUT'] = 'coupons/update/$1';
+$route['api/coupons/(:num)']['DELETE'] = 'coupons/delete/$1';
+
 $route['api/employeeorder']['GET'] = 'orders/employee_orders';
-$route['api/employeeorder/(:num)']['GET'] = 'orders/employee_order/$1';
+
 $route['api/employeeorder/status/(:num)']['PUT'] = 'orders/employee_update_status/$1';
 $route['api/employee/orders']['GET'] = 'orders/employee_orders';
 $route['api/employee/orders/(:num)']['GET'] = 'orders/employee_order/$1';

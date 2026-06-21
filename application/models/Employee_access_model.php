@@ -108,7 +108,7 @@ class Employee_access_model extends CI_Model {
     }
 
     public function create_default_permissions($employeeId, $updatedBy) {
-        $modules = ['dashboard', 'categories', 'subcategories', 'products', 'orders', 'users', 'employees', 'employee_roles', 'employee_access', 'departments', 'reports', 'feedback', 'reviews', 'settings'];
+        $modules = ['dashboard', 'categories', 'subcategories', 'products', 'orders', 'coupons', 'users', 'employees', 'employee_roles', 'employee_access', 'departments', 'reports', 'feedback', 'reviews', 'settings'];
         $now = date('Y-m-d H:i:s');
         $data = [];
 
