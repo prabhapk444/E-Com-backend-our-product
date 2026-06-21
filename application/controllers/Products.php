@@ -126,7 +126,8 @@ private function upload_image($field_name, $folder = '')
         $category_id = $this->input->get('category_id');
         $is_active = $this->input->get('is_active');
 
-        $products = $this->product_model->get_all($limit, $offset, $search, $category_id, $is_active);
+        $product_type = $this->input->get('product_type');
+        $products = $this->product_model->get_all($limit, $offset, $search, $category_id, $is_active, $product_type);
         
         foreach ($products as &$product) {
             $this->normalize_product_discount($product);
@@ -256,7 +257,8 @@ private function upload_image($field_name, $folder = '')
         $category_id = $this->input->get('category_id');
         $is_active = $this->input->get('is_active');
 
-        $products = $this->product_model->get_all($limit, $offset, $search, $category_id, $is_active);
+        $product_type = $this->input->get('product_type');
+        $products = $this->product_model->get_all($limit, $offset, $search, $category_id, $is_active, $product_type);
         
         foreach ($products as &$product) {
             $this->normalize_product_discount($product);
@@ -368,6 +370,8 @@ if (empty($data) || (!isset($data['name']) && isset($_POST['data']))) {
             'description' => $data['description'] ?? '',
             'category_id' => $data['categoryId'] ?? $data['category_id'] ?? null,
             'subcategory_id' => $data['subcategoryId'] ?? $data['subcategory_id'] ?? null,
+            'product_type' => $data['productType'] ?? $data['product_type'] ?? 'simple',
+            'variant_option_schema' => $data['variantOptionSchema'] ?? $data['variant_option_schema'] ?? null,
             'image' => $image_filename ?? '',
             'price' => $data['price'] ?? '',
             'quantity' => $data['quantity'] ?? '',
@@ -400,25 +404,13 @@ if (empty($data) || (!isset($data['name']) && isset($_POST['data']))) {
                     $variant_image = $this->upload_image($variant_key, '');
                 }
                 
-                $variant_data = [
-                    'product_id' => $product_id,
-                    'sku' => $variant['sku'] ?? null,
-                    'price' => $variant['price'] ?? 0,
-                    'stock' => $variant['stock'] ?? 0,
-                    'image' => $variant_image,
-                    'is_active' => $variant['isActive'] ?? $variant['is_active'] ?? '1',
-                    'created_by' => $user_id
-                ];
-                
+                $variant_data = $this->normalize_variant_payload($variant, $product_id);
                 $variant_id = $this->product_model->create_variant($variant_data);
                 
                 // Handle attributes - new format with array of attributes
-                if (!empty($variant['attributes']) && is_array($variant['attributes'])) {
-                    foreach ($variant['attributes'] as $attr) {
-                        // Skip if name or value is null
-                        if (empty($attr['name']) && $attr['name'] !== '0') continue;
-                        if (empty($attr['value']) && $attr['value'] !== '0') continue;
-                        
+                $attributes = $this->variant_attribute_payload($variant);
+                if (!empty($attributes) && is_array($attributes)) {
+                    foreach ($attributes as $attr) {
                         $attr_data = [
                             'variant_id' => $variant_id,
                             'name' => $attr['name'] ?? null,
@@ -505,6 +497,8 @@ if (empty($data) || (!isset($data['name']) && isset($_POST['data']))) {
         'description' => $data['description'] ?? $product['description'],
         'category_id' => $data['categoryId'] ?? $data['category_id'] ?? $product['category_id'],
         'subcategory_id' => $data['subcategoryId'] ?? $data['subcategory_id'] ?? $product['subcategory_id'],
+        'product_type' => $data['productType'] ?? $data['product_type'] ?? $product['product_type'] ?? 'simple',
+        'variant_option_schema' => $data['variantOptionSchema'] ?? $data['variant_option_schema'] ?? null,
         'image' => $image_filename,
         'price' => $data['price'] ?? $product['price'],
         'quantity' => $data['quantity'] ?? $product['quantity'],
@@ -568,19 +562,12 @@ if (!empty($variant['id'])) {
     if ($is_existing && empty($variant_image)) {
         $variant_image = $existing_variant['image'] ?? null;
     }
-            $variant_data = [
-                'sku' => $variant['sku'] ?? null,
-                'price' => $variant['price'] ?? 0,
-                'stock' => $variant['stock'] ?? 0,
-                'image' => $variant_image,
-                'is_active' => $variant['is_active'] ?? $variant['isActive'] ?? '1',
-                'updated_by' => $user_id
-            ];
+            $variant['image'] = $variant_image;
+            $variant_data = $this->normalize_variant_payload($variant, $id);
 
             if ($is_existing) {
                 $this->product_model->update_variant($variant_id, $variant_data);
             } else {
-                $variant_data['product_id'] = $id;
                 $variant_data['created_by'] = $user_id;
 
                 $variant_id = $this->product_model->create_variant($variant_data);
@@ -591,7 +578,7 @@ if (!empty($variant['id'])) {
 
     $this->product_model->delete_variant_attributes($variant_id);
 
-    foreach ($variant['attributes'] as $attr) {
+    foreach ($this->variant_attribute_payload($variant) as $attr) {
         if (!empty($attr['name']) && !empty($attr['value'])) {
             $this->product_model->create_variant_attribute([
                 'variant_id' => $variant_id,
@@ -697,6 +684,74 @@ if (!empty($variant['id'])) {
     // ============================================
     // VARIANT MANAGEMENT
     // ============================================
+
+    private function normalize_variant_payload($variant, $product_id) {
+        $attributes = $this->variant_attribute_payload($variant);
+        $color = isset($variant['color']) ? trim((string)$variant['color']) : null;
+        $size = isset($variant['size']) ? trim((string)$variant['size']) : null;
+
+        foreach ($attributes as $attr) {
+            $name = strtolower(trim((string)($attr['name'] ?? '')));
+            $value = trim((string)($attr['value'] ?? ''));
+            if ($name === 'color' && !$color) $color = $value;
+            if ($name === 'size' && !$size) $size = $value;
+        }
+
+        return [
+            'product_id' => $product_id,
+            'sku' => isset($variant['sku']) ? trim((string)$variant['sku']) : null,
+            'price' => $variant['price'] ?? 0,
+            'stock' => $variant['stock'] ?? 0,
+            'color' => $color,
+            'size' => $size,
+            'image' => $variant['image'] ?? null,
+            'is_active' => $variant['isActive'] ?? $variant['is_active'] ?? '1',
+        ];
+    }
+
+    private function variant_attribute_payload($variant) {
+        $attributes = [];
+
+        if (!empty($variant['color'])) {
+            $attributes[] = ['name' => 'Color', 'value' => trim((string)$variant['color'])];
+        }
+        if (!empty($variant['size'])) {
+            $attributes[] = ['name' => 'Size', 'value' => trim((string)$variant['size'])];
+        }
+
+        if (!empty($variant['attributes']) && is_array($variant['attributes'])) {
+            foreach ($variant['attributes'] as $attr) {
+                if (empty($attr['name']) && $attr['name'] !== '0') continue;
+                if (empty($attr['value']) && $attr['value'] !== '0') continue;
+
+                $name = trim((string)$attr['name']);
+                $value = trim((string)$attr['value']);
+                $normalized = strtolower($name);
+                $exists = false;
+
+                foreach ($attributes as $existing) {
+                    if (strtolower((string)$existing['name']) === $normalized && (string)$existing['value'] === $value) {
+                        $exists = true;
+                        break;
+                    }
+                }
+
+                if (!$exists) {
+                    $attributes[] = ['name' => $name, 'value' => $value];
+                }
+            }
+        }
+
+        if (empty($attributes) && (array_key_exists('attribute', $variant) || array_key_exists('Attribute', $variant))) {
+            $attr_name = isset($variant['attribute']) ? $variant['attribute'] : (isset($variant['Attribute']) ? $variant['Attribute'] : null);
+            $attr_value = isset($variant['value']) ? $variant['value'] : (isset($variant['Value']) ? $variant['Value'] : null);
+            if (!empty($attr_name) && !empty($attr_value)) {
+                $attributes[] = ['name' => $attr_name, 'value' => $attr_value];
+            }
+        }
+
+        return $attributes;
+    }
 
     // Delete a single variant
     public function delete_variant($id) {

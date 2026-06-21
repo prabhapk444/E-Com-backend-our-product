@@ -11,7 +11,7 @@ class Product_model extends CI_Model {
     }
 
     // Get all products with pagination and filters
-    public function get_all($limit = 10, $offset = 0, $search = '', $category_id = null, $is_active = null) {
+    public function get_all($limit = 10, $offset = 0, $search = '', $category_id = null, $is_active = null, $product_type = null) {
         $this->db->select('p.*, c.name as category_name, sc.name as subcategory_name');
         $this->db->from("{$this->table} as p");
         $this->db->join('categories c', 'c.id = p.category_id', 'left');
@@ -30,6 +30,10 @@ class Product_model extends CI_Model {
 
         if ($is_active !== null && $is_active !== '') {
             $this->db->where('p.is_active', $is_active);
+        }
+
+        if ($product_type !== null && $product_type !== '') {
+            $this->db->where('p.product_type', $product_type);
         }
 
         $this->db->order_by('p.created_at', 'DESC');
@@ -96,9 +100,40 @@ class Product_model extends CI_Model {
             $this->db->where('variant_id', $variant['id']);
             $attr_query = $this->db->get($this->attributes_table);
             $variant['attributes'] = $attr_query->result_array();
+            $variant = $this->normalize_variant_options($variant);
         }
         
         return $variants;
+    }
+
+    private function normalize_variant_options($variant) {
+        $variant['attribute'] = $variant['attribute'] ?? null;
+        $variant['value'] = $variant['value'] ?? null;
+        $variant['Color'] = $variant['Color'] ?? null;
+        $variant['Size'] = $variant['Size'] ?? null;
+        $variant['color'] = $variant['color'] ?? null;
+        $variant['size'] = $variant['size'] ?? null;
+
+        foreach ($variant['attributes'] ?? [] as $attr) {
+            $name = trim((string)($attr['name'] ?? ''));
+            $value = trim((string)($attr['value'] ?? ''));
+            $normalized_name = strtolower($name);
+
+            if (!$variant['attribute'] && $name) $variant['attribute'] = $name;
+            if (!$variant['value'] && $value) $variant['value'] = $value;
+
+            if ($normalized_name === 'color') {
+                $variant['color'] = $value;
+                $variant['Color'] = $value;
+            }
+
+            if ($normalized_name === 'size') {
+                $variant['size'] = $value;
+                $variant['Size'] = $value;
+            }
+        }
+
+        return $variant;
     }
 
     // Get single variant
