@@ -16,7 +16,7 @@ defined('SMTP_FROM_EMAIL')      or define('SMTP_FROM_EMAIL', (ENVIRONMENT !== 'p
 defined('SMTP_FROM_NAME')      or define('SMTP_FROM_NAME', (ENVIRONMENT !== 'production')? 'Thrive Boost':'Thrive Boost');
 defined('SMTP_SECURE')      or define('SMTP_SECURE', (ENVIRONMENT !== 'production')? 'tls' : 'ssl'); 
 defined('SMTP_AUTH')      or define('SMTP_AUTH', true);
-defined('ADMIN_EMAIL')      or define('ADMIN_EMAIL', (ENVIRONMENT !== 'production')? 'prabhakarans@anjaconline.org':'prabhakarans@anjaconline.org');
+defined('ADMIN_EMAIL')      or define('ADMIN_EMAIL', (ENVIRONMENT !== 'production')? 'thriveboostbill@gmail.com':'thriveboostbill@gmail.com');
 
 
 
