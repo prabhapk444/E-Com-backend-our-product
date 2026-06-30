@@ -114,6 +114,7 @@ $route['feedback/latest-enabled'] = 'feedback/get_latest_enabled';
 
 
 $route['category/get_all'] = 'category/get_all';
+$route['category/admin/get_all'] = 'category/admin_get_all';
 $route['category/create'] = 'category/create';
 $route['category/update/(:num)'] = 'category/update/$1';
 $route['category/delete/(:num)'] = 'category/delete/$1';
@@ -121,6 +122,7 @@ $route['category/toggle_status/(:num)'] = 'category/toggle_status/$1';
 
 $route['subcategories'] = 'subcategory/index';
 $route['subcategories'] = 'subcategory/get_all';
+$route['subcategories/admin/get_all'] = 'subcategory/get_admin_all';
 $route['subcategories/(:num)'] = 'subcategory/view/$1';
 $route['subcategories/create'] = 'subcategory/create';
 $route['subcategories/update/(:num)'] = 'subcategory/update/$1';

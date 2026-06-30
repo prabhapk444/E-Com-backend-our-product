@@ -29,10 +29,16 @@ class Category extends CI_Controller {
 
     // Get all categories - role 2 or employee with view permission
     public function get_all() {
-        $this->authorize('categories', 'view');
-        $data = $this->Category_model->get_all();
+        $data = $this->Category_model->get_enabled_view();
         return success_response("Fetched", $data);
     }
+
+
+    public function admin_get_all() {
+    $this->authorize('categories', 'view');
+    $data = $this->Category_model->get_all();
+    return success_response("Fetched", $data);
+}
 
     // Create category - only role 2
     public function create() {

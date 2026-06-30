@@ -19,6 +19,14 @@ class Subcategory_model extends CI_Model {
         return $this->db->get()->result();
     }
 
+    public function get_enabled() {
+    return $this->db
+        ->where('is_enabled', 1)
+        ->order_by('id', 'DESC')
+        ->get($this->table)
+        ->result();
+}
+
     public function create($data) {
         $this->db->insert($this->table, $data);
         return $this->db->insert_id();
@@ -41,4 +49,12 @@ class Subcategory_model extends CI_Model {
         }
         return false;
     }
+
+    public function get($id)
+{
+    return $this->db
+        ->where('id', $id)
+        ->get($this->table)
+        ->row();
+}
 }

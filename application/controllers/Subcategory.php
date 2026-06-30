@@ -37,10 +37,17 @@ class Subcategory extends CI_Controller {
 }
 
     public function get_all() {
-        $this->authorize('subcategories', 'view');
-        $data = $this->Subcategory_model->get_all();
-        return success_response("Fetched", $data);
-    }
+    $data = $this->Subcategory_model->get_enabled(); // Best
+    return success_response("Fetched", $data);
+}
+
+    public function get_admin_all() {
+    $this->authorize('subcategories', 'view');
+
+    $data = $this->Subcategory_model->get_all();
+
+    return success_response("Fetched", $data);
+}
 
   
     public function view($id) {

@@ -21,6 +21,15 @@ public function delete($id) {
     return $this->db->where('id', $id)->delete($this->table);
 }
 
+
+  public function get_enabled_view() {
+    return $this->db
+        ->where('is_enabled', 1)
+        ->order_by('id', 'DESC')
+        ->get($this->table)
+        ->result();
+}
+
 public function get_all() {
     return $this->db->order_by('id', 'DESC')->get($this->table)->result();
 }
