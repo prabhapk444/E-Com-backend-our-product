@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 21, 2026 at 09:53 AM
+-- Generation Time: Jul 01, 2026 at 06:49 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.1.25
 
@@ -44,7 +44,7 @@ CREATE TABLE `categories` (
 INSERT INTO `categories` (`id`, `name`, `is_enabled`, `createdby`, `updatedby`, `createdat`, `updatedat`) VALUES
 (1, 'Electronics', 1, 5, 5, '2026-03-24 05:21:11', '2026-03-25 06:09:42'),
 (2, 'Men', 1, 5, 5, '2026-04-01 10:10:22', '2026-04-01 10:14:52'),
-(3, 'Beauty & Personal Care', 1, 5, 5, '2026-04-04 10:43:24', '2026-06-18 17:37:23');
+(3, 'Beauty & Personal Care', 1, 5, 5, '2026-04-04 10:43:24', '2026-06-30 05:30:47');
 
 -- --------------------------------------------------------
 
@@ -75,7 +75,7 @@ CREATE TABLE `coupons` (
 
 INSERT INTO `coupons` (`id`, `code`, `description`, `discount_type`, `discount_value`, `min_order_amount`, `max_discount_amount`, `usage_limit`, `used_count`, `starts_at`, `expires_at`, `is_active`, `created_at`, `updated_at`) VALUES
 (2, 'SAVELIFE', '', 'percentage', 10.00, 5000.00, 500.00, 10, 1, '2026-06-21 10:11:00', '2026-06-22 10:11:00', 1, '2026-06-21 10:11:57', '2026-06-21 10:13:15'),
-(3, 'SAVE100', '', 'fixed', 100.00, 1000.00, 100.00, 100, 0, '2026-06-21 10:54:00', '2026-06-30 10:54:00', 1, '2026-06-21 10:54:27', '2026-06-21 10:54:27');
+(3, 'SAVE100', '', 'fixed', 100.00, 1000.00, 100.00, 100, 0, '2026-06-21 10:54:00', '2026-07-08 10:54:00', 1, '2026-06-21 10:54:27', '2026-06-30 11:23:47');
 
 -- --------------------------------------------------------
 
@@ -166,7 +166,7 @@ CREATE TABLE `employees` (
 --
 
 INSERT INTO `employees` (`id`, `name`, `email`, `phone`, `password`, `last_login_at`, `role`, `department`, `salary`, `joined_date`, `status`, `created_by`, `updated_by`, `created_at`, `updated_at`) VALUES
-(2, 'Prabhakaran', 'sigmaprabhakaran@gmail.com', '6383786437', '$2y$10$jrMlDJhbEBanjOvlXUsszumgNUaiqhv6Pgw1qmL6hRlZk3fw8lYOi', '2026-06-21 09:26:40', 'Date Entry', 'Support', 12000.00, '2026-06-13', 'active', 5, NULL, '2026-06-13 10:41:41', '0000-00-00 00:00:00');
+(2, 'Prabhakaran', 'sigmaprabhakaran@gmail.com', '6383786437', '$2y$10$fmvRrRA.1TtpwB1nOzfHD.EYH1Iv6DDeehNWga84fUClu2iJ6W6TC', '2026-06-30 10:59:45', 'Date Entry', 'Support', 12000.00, '2026-06-13', 'active', 5, NULL, '2026-06-13 10:41:41', '0000-00-00 00:00:00');
 
 -- --------------------------------------------------------
 
@@ -192,19 +192,19 @@ CREATE TABLE `employee_access` (
 --
 
 INSERT INTO `employee_access` (`employee_id`, `module_key`, `can_view`, `can_create`, `can_edit`, `can_delete`, `can_export`, `can_status`, `updated_by`, `updated_at`) VALUES
-(2, 'categories', 0, 0, 0, 0, 0, 0, 5, '2026-06-19 05:25:35'),
-(2, 'dashboard', 1, 0, 0, 0, 0, 0, 5, '2026-06-19 05:25:35'),
-(2, 'departments', 0, 0, 0, 0, 0, 0, 5, '2026-06-19 05:25:35'),
-(2, 'employees', 0, 0, 0, 0, 0, 0, 5, '2026-06-19 05:25:35'),
-(2, 'employee_roles', 0, 0, 0, 0, 0, 0, 5, '2026-06-19 05:25:35'),
-(2, 'feedback', 1, 0, 0, 0, 0, 0, 5, '2026-06-19 05:25:35'),
-(2, 'orders', 1, 0, 0, 0, 0, 0, 5, '2026-06-19 05:25:35'),
-(2, 'products', 0, 0, 0, 0, 0, 0, 5, '2026-06-19 05:25:35'),
-(2, 'reports', 0, 0, 0, 0, 0, 0, 5, '2026-06-19 05:25:35'),
-(2, 'reviews', 1, 0, 0, 0, 0, 0, 5, '2026-06-19 05:25:35'),
-(2, 'settings', 0, 0, 0, 0, 0, 0, 5, '2026-06-19 05:25:35'),
-(2, 'subcategories', 0, 0, 0, 0, 0, 0, 5, '2026-06-19 05:25:35'),
-(2, 'users', 1, 0, 0, 0, 0, 0, 5, '2026-06-19 05:25:35');
+(2, 'categories', 1, 0, 0, 0, 0, 0, 5, '2026-06-30 05:30:33'),
+(2, 'dashboard', 1, 0, 0, 0, 0, 0, 5, '2026-06-30 05:30:33'),
+(2, 'departments', 0, 0, 0, 0, 0, 0, 5, '2026-06-30 05:30:33'),
+(2, 'employees', 0, 0, 0, 0, 0, 0, 5, '2026-06-30 05:30:33'),
+(2, 'employee_roles', 0, 0, 0, 0, 0, 0, 5, '2026-06-30 05:30:33'),
+(2, 'feedback', 1, 0, 0, 0, 0, 0, 5, '2026-06-30 05:30:33'),
+(2, 'orders', 1, 0, 0, 0, 0, 0, 5, '2026-06-30 05:30:33'),
+(2, 'products', 0, 0, 0, 0, 0, 0, 5, '2026-06-30 05:30:33'),
+(2, 'reports', 0, 0, 0, 0, 0, 0, 5, '2026-06-30 05:30:33'),
+(2, 'reviews', 1, 0, 0, 0, 0, 0, 5, '2026-06-30 05:30:33'),
+(2, 'settings', 0, 0, 0, 0, 0, 0, 5, '2026-06-30 05:30:33'),
+(2, 'subcategories', 1, 0, 0, 0, 0, 0, 5, '2026-06-30 05:30:33'),
+(2, 'users', 1, 0, 0, 0, 0, 0, 5, '2026-06-30 05:30:33');
 
 -- --------------------------------------------------------
 
@@ -342,7 +342,7 @@ INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `product_name`, `vari
 
 CREATE TABLE `password_reset_tokens` (
   `id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL,
+  `user_id` int(11) DEFAULT NULL,
   `employee_id` int(11) DEFAULT NULL,
   `token` varchar(255) NOT NULL,
   `expires_at` datetime NOT NULL,
@@ -369,7 +369,8 @@ INSERT INTO `password_reset_tokens` (`id`, `user_id`, `employee_id`, `token`, `e
 (12, 5, NULL, '588623', '2026-05-12 08:16:55', 1, '2026-05-12 11:41:55'),
 (13, 5, NULL, '593571', '2026-06-06 07:32:38', 1, '2026-06-06 10:57:38'),
 (14, 5, NULL, '661719', '2026-06-13 10:33:54', 1, '2026-06-13 10:28:54'),
-(15, 5, NULL, '641130', '2026-06-13 10:36:21', 1, '2026-06-13 10:31:21');
+(15, 5, NULL, '641130', '2026-06-13 10:36:21', 1, '2026-06-13 10:31:21'),
+(20, NULL, 2, '384664', '2026-06-30 11:03:46', 1, '2026-06-30 10:58:46');
 
 -- --------------------------------------------------------
 
@@ -539,7 +540,7 @@ INSERT INTO `subcategories` (`id`, `name`, `category_id`, `is_enabled`, `created
 (1, 'Smart Watches', 1, 1, 5, 5, '2026-03-24 06:22:58', '2026-03-25 06:10:05'),
 (2, 'Shirts', 2, 1, 5, 5, '2026-04-01 10:10:34', '2026-04-01 10:15:03'),
 (3, 'Speakers', 1, 1, 5, NULL, '2026-04-04 09:40:32', NULL),
-(4, 'Body Care / Lotion', 3, 1, 5, NULL, '2026-04-04 10:43:35', NULL);
+(4, 'Body Care / Lotion', 3, 1, 5, 5, '2026-04-04 10:43:35', '2026-06-30 05:33:17');
 
 -- --------------------------------------------------------
 
@@ -570,9 +571,9 @@ CREATE TABLE `users` (
 
 INSERT INTO `users` (`id`, `name`, `email`, `place`, `phonenumber`, `password`, `google_id`, `role`, `createdby`, `updatedby`, `last_login_at`, `createdat`, `updatedat`, `is_enabled`) VALUES
 (1, 'Thrive Boost', 'thriveboosttech@gmail.com', 'sivakasi', '6383786437', '$2y$10$pTf941lweksalsmXjZhYaup5xEa/aksR0Ve13R6rZqbcFdBl.5riK', NULL, 1, 1, NULL, '2026-04-16 07:12:46', '2026-03-22 19:41:10', '2026-03-22 22:34:38', 1),
-(2, 'Prabha', 'viperprabhakaran@gmail.com', 'sivakasi', '6383786437', '$2y$10$ixF3UcwcoSyv8SIdBQMtk.ZmfLOsr/lnxbyu1G2gGHRaZfXgMMgKm', NULL, 3, NULL, NULL, '2026-06-21 04:42:13', '2026-03-22 20:14:11', '2026-06-21 10:12:13', 1),
+(2, 'Prabha', 'viperprabhakaran@gmail.com', 'sivakasi', '6383786437', '$2y$10$ixF3UcwcoSyv8SIdBQMtk.ZmfLOsr/lnxbyu1G2gGHRaZfXgMMgKm', NULL, 3, NULL, NULL, '2026-07-01 04:39:52', '2026-03-22 20:14:11', '2026-07-01 10:09:52', 1),
 (3, 'prabha', 'thriveprabha@gmail.com', NULL, NULL, '$2y$10$7pCPIEgSPLkqujOhoF.myec0WbeSpGMxNCWLWXlm90vg2Z/3H.Hha', NULL, 3, NULL, NULL, '2026-04-16 07:12:46', '2026-03-23 13:32:24', '2026-03-23 13:32:24', 1),
-(5, 'Prabha admin', 'thriveboostbill@gmail.com', 'Sivakasi', '6383786437', '$2y$10$22gEv2pvnee5VydCBRkOQ.sgxHUxVdAHiQ6ZEN28HmX4EDOA.AVOq', NULL, 2, NULL, NULL, '2026-06-21 03:52:56', '2026-03-23 00:00:00', '2026-06-21 09:22:56', 1),
+(5, 'Prabha admin', 'thriveboostbill@gmail.com', 'Sivakasi', '6383786437', '$2y$10$22gEv2pvnee5VydCBRkOQ.sgxHUxVdAHiQ6ZEN28HmX4EDOA.AVOq', NULL, 2, NULL, NULL, '2026-06-30 05:26:30', '2026-03-23 00:00:00', '2026-06-30 10:56:30', 1),
 (6, 'Ganesh Krishna', 'gk3946020@gmail.com', 'Srivi', '63802 49114', '$2y$10$w9DdfLslL228GYePxDxaA.cGh9i9E3bB3aJ0RqZAJeBvhlM8lfqx.', NULL, 2, NULL, NULL, '2026-04-16 07:12:46', '2026-03-23 00:00:00', '2026-04-13 11:32:28', 1);
 
 -- --------------------------------------------------------
@@ -810,7 +811,7 @@ ALTER TABLE `order_items`
 -- AUTO_INCREMENT for table `password_reset_tokens`
 --
 ALTER TABLE `password_reset_tokens`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- AUTO_INCREMENT for table `products`
