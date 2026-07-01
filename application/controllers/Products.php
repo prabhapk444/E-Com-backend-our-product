@@ -246,6 +246,33 @@ private function upload_image($field_name, $folder = '')
         success_response('Featured products fetched successfully', ['products' => $products]);
     }
 
+    // Get new arrivals products
+    public function new_arrivals() {
+        $limit = (int)$this->input->get('limit') ?: 10;
+        
+        $products = $this->product_model->get_new_arrivals($limit);
+        
+        foreach ($products as &$product) {
+            $this->normalize_product_discount($product);
+            $product['variants'] = $this->product_model->get_variants($product['id']);
+            $product['categoryId'] = $product['category_id'];
+            $product['subcategoryId'] = $product['subcategory_id'];
+            
+            // Convert image paths to full URLs
+            if (!empty($product['image'])) {
+                $product['image'] = base_url($product['image']);
+            }
+            if (!empty($product['images'])) {
+                $images = json_decode($product['images'], true) ?: [];
+                $product['images'] = array_map(function($img) {
+                    return base_url($img);
+                }, $images);
+            }
+        }
+
+        success_response('New arrivals fetched successfully', ['products' => $products]);
+    }
+
     public function get_all_admin() {
         $user = $this->check_product_permission('view');
         if (!$user) return;
@@ -258,7 +285,9 @@ private function upload_image($field_name, $folder = '')
         $is_active = $this->input->get('is_active');
 
         $product_type = $this->input->get('product_type');
-        $products = $this->product_model->get_all($limit, $offset, $search, $category_id, $is_active, $product_type);
+        $featured = $this->input->get('featured');
+        $new_arrivals = $this->input->get('new_arrivals');
+        $products = $this->product_model->get_all($limit, $offset, $search, $category_id, $is_active, $product_type, $featured, $new_arrivals);
         
         foreach ($products as &$product) {
             $this->normalize_product_discount($product);
@@ -380,6 +409,7 @@ if (empty($data) || (!isset($data['name']) && isset($_POST['data']))) {
             'hsn_code' => $data['hsnCode'] ?? $data['hsn_code'] ?? '',
             'is_active' => $data['isActive'] ?? $data['is_active'] ?? '1',
             'featured' => $data['featured'] ?? $data['is_featured'] ?? '0',
+            'new_arrivals' => $data['newArrivals'] ?? $data['new_arrivals'] ?? '0',
             'discount_price' => $data['discount_price'] ?? null,
             'discount_type' => !empty($data['discount_price']) && empty($data['discount_type']) ? 'percentage' : ($data['discount_type'] ?? null),
             'created_by' => $user_id
@@ -507,6 +537,7 @@ if (empty($data) || (!isset($data['name']) && isset($_POST['data']))) {
         'hsn_code' => $data['hsnCode'] ?? $data['hsn_code'] ?? $product['hsn_code'],
         'is_active' => $data['isActive'] ?? $data['is_active'] ?? $product['is_active'],
         'featured' => $data['featured'] ?? $data['is_featured'] ?? $product['featured'],
+        'new_arrivals' => $data['newArrivals'] ?? $data['new_arrivals'] ?? $product['new_arrivals'],
         'discount_price' => $data['discount_price'] ?? $product['discount_price'],
         'discount_type' => !empty($data['discount_price']) && empty($data['discount_type']) ? 'percentage' : ($data['discount_type'] ?? $product['discount_type']),
         'updated_by' => $user_id

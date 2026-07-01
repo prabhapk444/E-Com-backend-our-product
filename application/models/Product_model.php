@@ -11,7 +11,7 @@ class Product_model extends CI_Model {
     }
 
     // Get all products with pagination and filters
-    public function get_all($limit = 10, $offset = 0, $search = '', $category_id = null, $is_active = null, $product_type = null) {
+    public function get_all($limit = 10, $offset = 0, $search = '', $category_id = null, $is_active = null, $product_type = null, $featured = null, $new_arrivals = null) {
         $this->db->select('p.*, c.name as category_name, sc.name as subcategory_name');
         $this->db->from("{$this->table} as p");
         $this->db->join('categories c', 'c.id = p.category_id', 'left');
@@ -34,6 +34,14 @@ class Product_model extends CI_Model {
 
         if ($product_type !== null && $product_type !== '') {
             $this->db->where('p.product_type', $product_type);
+        }
+
+        if ($featured !== null && $featured !== '') {
+            $this->db->where('p.featured', $featured);
+        }
+
+        if ($new_arrivals !== null && $new_arrivals !== '') {
+            $this->db->where('p.new_arrivals', $new_arrivals);
         }
 
         $this->db->order_by('p.created_at', 'DESC');
@@ -256,6 +264,16 @@ class Product_model extends CI_Model {
     // Get featured products
     public function get_featured($limit = 10) {
         $this->db->where('featured', 1);
+        $this->db->where('is_active', '1');
+        $this->db->order_by('created_at', 'DESC');
+        $this->db->limit($limit);
+        $query = $this->db->get($this->table);
+        return $query->result_array();
+    }
+
+    // Get new arrivals products
+    public function get_new_arrivals($limit = 10) {
+        $this->db->where('new_arrivals', 1);
         $this->db->where('is_active', '1');
         $this->db->order_by('created_at', 'DESC');
         $this->db->limit($limit);
