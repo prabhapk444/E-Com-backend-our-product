@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jul 01, 2026 at 06:49 AM
+-- Generation Time: Jul 01, 2026 at 08:42 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.1.25
 
@@ -75,7 +75,7 @@ CREATE TABLE `coupons` (
 
 INSERT INTO `coupons` (`id`, `code`, `description`, `discount_type`, `discount_value`, `min_order_amount`, `max_discount_amount`, `usage_limit`, `used_count`, `starts_at`, `expires_at`, `is_active`, `created_at`, `updated_at`) VALUES
 (2, 'SAVELIFE', '', 'percentage', 10.00, 5000.00, 500.00, 10, 1, '2026-06-21 10:11:00', '2026-06-22 10:11:00', 1, '2026-06-21 10:11:57', '2026-06-21 10:13:15'),
-(3, 'SAVE100', '', 'fixed', 100.00, 1000.00, 100.00, 100, 0, '2026-06-21 10:54:00', '2026-07-08 10:54:00', 1, '2026-06-21 10:54:27', '2026-06-30 11:23:47');
+(3, 'SAVE100', '', 'fixed', 100.00, 1000.00, 100.00, 100, 1, '2026-06-21 10:54:00', '2026-07-08 10:54:00', 1, '2026-06-21 10:54:27', '2026-07-01 11:01:47');
 
 -- --------------------------------------------------------
 
@@ -298,7 +298,8 @@ INSERT INTO `orders` (`id`, `order_id`, `name`, `email`, `phone`, `address`, `ci
 (5, 'ORD-69D143AAF0AFE', 'S Prabhakaran', 'viperprabhakaran@gmail.com', '6383786437', '11,sedan kinatru street,thiruthangal', 'sivakasi', 'Tamil Nadu', '626130', 1.00, 0.03, 0.03, NULL, 0.00, NULL, 1.05, 'online', 'pay_SZUSmJw6ETX6Le', 'paid', 'delivered', NULL, '2026-04-06 10:04:36', '2026-04-04 17:00:26'),
 (6, 'ORD-69D389D4C90C4', 'S Prabhakaran', 'viperprabhakaran@gmail.com', '6383786437', '11,sedan kinatru street,thiruthangal', 'sivakasi', 'Tamil Nadu', '626130', 1640.00, 41.00, 41.00, NULL, 0.00, NULL, 1722.00, 'cod', NULL, 'cod', 'delivered', 2, '2026-06-18 17:40:51', '2026-04-06 10:24:20'),
 (7, 'ORD-69D5EA2D344BF', 'S Prabhakaran', 'viperprabhakaran@gmail.com', '6383786437', '11,sedan kinatru street,thiruthangal', 'sivakasi', 'Tamil Nadu', '626130', 2400.00, 60.00, 60.00, NULL, 0.00, NULL, 2520.00, 'cod', NULL, 'cod', 'delivered', NULL, '2026-04-14 06:44:51', '2026-04-08 05:39:57'),
-(8, 'ORD-6A376BE31C291', 'prabha', 'viperprabhakaran@gmail.com', '6383786437', 'sedan kinatru street', 'sivakasi', 'Tamil Nadu', '626130', 7040.00, 163.50, 163.50, 'SAVELIFE', 500.00, 2, 6867.00, 'cod', NULL, 'cod', 'pending', NULL, NULL, '2026-06-21 04:43:15');
+(8, 'ORD-6A376BE31C291', 'prabha', 'viperprabhakaran@gmail.com', '6383786437', 'sedan kinatru street', 'sivakasi', 'Tamil Nadu', '626130', 7040.00, 163.50, 163.50, 'SAVELIFE', 500.00, 2, 6867.00, 'cod', NULL, 'cod', 'processing', NULL, '2026-07-01 05:32:07', '2026-06-21 04:43:15'),
+(9, 'ORD-6A44A643DE366', 'prabha', 'viperprabhakaran@gmail.com', '6383786437', 'sedan kinatru street', 'sivakasi', 'Tamil Nadu', '626130', 1080.00, 24.50, 24.50, 'SAVE100', 100.00, 3, 1128.00, 'cod', NULL, 'cod', 'confirmed', NULL, '2026-07-01 05:32:12', '2026-07-01 05:31:47');
 
 -- --------------------------------------------------------
 
@@ -332,7 +333,8 @@ INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `product_name`, `vari
 (12, 6, 5, 'Full Sleeve Shirt', 107, 'Color: navy Blue', 2, 420.00, '2026-04-06 10:24:20'),
 (13, 7, 6, 'Wireless Bluetooth Speaker', 0, '', 1, 2400.00, '2026-04-08 05:39:57'),
 (14, 8, 4, 'Classical Smart watche', 104, 'Color: White', 1, 3680.00, '2026-06-21 04:43:15'),
-(15, 8, 4, 'Classical Smart watche', 105, 'Color: Black', 1, 3360.00, '2026-06-21 04:43:15');
+(15, 8, 4, 'Classical Smart watche', 105, 'Color: Black', 1, 3360.00, '2026-06-21 04:43:15'),
+(16, 9, 7, 'HydraGlow Nourishing Body Lotion', 0, '', 3, 360.00, '2026-07-01 05:31:47');
 
 -- --------------------------------------------------------
 
@@ -403,18 +405,20 @@ CREATE TABLE `products` (
   `updated_by` int(11) DEFAULT NULL,
   `created_at` datetime DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  `featured` tinyint(1) DEFAULT 0
+  `featured` tinyint(1) DEFAULT 0,
+  `new_arrivals` tinyint(1) NOT NULL DEFAULT 0,
+  `best_seller` tinyint(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `products`
 --
 
-INSERT INTO `products` (`id`, `name`, `slug`, `description`, `category_id`, `subcategory_id`, `product_type`, `variant_option_schema`, `quantity`, `price`, `discount_price`, `discount_type`, `image`, `images`, `rating`, `review_count`, `gst`, `weight`, `hsn_code`, `is_active`, `created_by`, `updated_by`, `created_at`, `updated_at`, `featured`) VALUES
-(4, 'Classical Smart watche', NULL, 'Stylish black smart watch with modern design and essential features. It comes with fitness tracking, heart rate monitoring, and long-lasting battery life. Perfect for daily use with a comfortable strap and sleek look', 1, 1, 'simple', NULL, 28, 4100.00, 20.00, '', NULL, NULL, 0.00, 0, '5', '400g', '5201', '1', 5, 5, '2026-04-01 16:28:41', '2026-06-21 10:13:15', 1),
-(5, 'Full Sleeve Shirt', NULL, 'Stylish and comfortable full sleeve shirt made from premium cotton fabric. Perfect for casual and office wear, featuring a modern fit, breathable material, and vibrant colors that stay fresh all day. Available in multiple Colors.', 2, 2, 'simple', NULL, 22, 450.00, 14.00, '', NULL, NULL, 5.00, 1, '5', '220g', '6205', '1', 5, 5, '2026-04-01 18:37:00', '2026-06-18 22:45:02', 1),
-(6, 'Wireless Bluetooth Speaker', NULL, 'Portable Bluetooth speaker with strong bass, wireless connectivity, and long battery backup. Perfect for travel and daily use.', 1, 3, 'simple', NULL, 19, 2400.00, 15.00, '', 'uploads/products/1775297192_OIP.webp', NULL, 0.00, 0, '18', '1kg', '8518', '1', 5, 5, '2026-04-04 11:42:49', '2026-06-16 10:59:15', 1),
-(7, 'HydraGlow Nourishing Body Lotion', NULL, 'A lightweight and deeply hydrating body lotion designed to nourish and protect your skin. This fragrance-free formula is perfect for sensitive skin, providing long-lasting moisture without irritation. Enriched with skin-loving ingredients, it absorbs quickly and leaves your skin soft, smooth, and naturally radiant.\n\nIdeal for daily use, this body lotion helps maintain healthy, hydrated skin throughout the day without any greasy residue.', 3, 4, 'simple', NULL, 25, 400.00, 10.00, '', 'uploads/products/1775299479_Natural Face Serum.jpg', NULL, 0.00, 0, '18', '200', '3304', '1', 5, 5, '2026-04-04 12:44:39', '2026-06-18 22:55:06', 1);
+INSERT INTO `products` (`id`, `name`, `slug`, `description`, `category_id`, `subcategory_id`, `product_type`, `variant_option_schema`, `quantity`, `price`, `discount_price`, `discount_type`, `image`, `images`, `rating`, `review_count`, `gst`, `weight`, `hsn_code`, `is_active`, `created_by`, `updated_by`, `created_at`, `updated_at`, `featured`, `new_arrivals`, `best_seller`) VALUES
+(4, 'Classical Smart watche', NULL, 'Stylish black smart watch with modern design and essential features. It comes with fitness tracking, heart rate monitoring, and long-lasting battery life. Perfect for daily use with a comfortable strap and sleek look', 1, 1, 'simple', NULL, 28, 4100.00, 20.00, '', NULL, NULL, 0.00, 0, '5', '400g', '5201', '1', 5, 5, '2026-04-01 16:28:41', '2026-06-21 10:13:15', 1, 0, 0),
+(5, 'Full Sleeve Shirt', NULL, 'Stylish and comfortable full sleeve shirt made from premium cotton fabric. Perfect for casual and office wear, featuring a modern fit, breathable material, and vibrant colors that stay fresh all day. Available in multiple Colors.', 2, 2, 'simple', NULL, 22, 450.00, 14.00, '', NULL, NULL, 5.00, 1, '5', '220g', '6205', '1', 5, 5, '2026-04-01 18:37:00', '2026-07-01 12:01:00', 1, 0, 1),
+(6, 'Wireless Bluetooth Speaker', NULL, 'Portable Bluetooth speaker with strong bass, wireless connectivity, and long battery backup. Perfect for travel and daily use.', 1, 3, 'simple', NULL, 19, 2400.00, 15.00, '', 'uploads/products/1775297192_OIP.webp', NULL, 0.00, 0, '18', '1kg', '8518', '1', 5, 5, '2026-04-04 11:42:49', '2026-06-16 10:59:15', 1, 0, 0),
+(7, 'HydraGlow Nourishing Body Lotion', NULL, 'A lightweight and deeply hydrating body lotion designed to nourish and protect your skin. This fragrance-free formula is perfect for sensitive skin, providing long-lasting moisture without irritation. Enriched with skin-loving ingredients, it absorbs quickly and leaves your skin soft, smooth, and naturally radiant.\n\nIdeal for daily use, this body lotion helps maintain healthy, hydrated skin throughout the day without any greasy residue.', 3, 4, 'simple', NULL, 22, 400.00, 10.00, '', 'uploads/products/1775299479_Natural Face Serum.jpg', NULL, 0.00, 0, '18', '200', '3304', '1', 5, 5, '2026-04-04 12:44:39', '2026-07-01 11:01:47', 1, 1, 0);
 
 -- --------------------------------------------------------
 
@@ -445,11 +449,11 @@ CREATE TABLE `product_variants` (
 INSERT INTO `product_variants` (`id`, `product_id`, `sku`, `price`, `stock`, `color`, `size`, `image`, `is_active`, `created_by`, `updated_by`, `created_at`, `updated_at`) VALUES
 (104, 4, 'SM01', 4600.00, 19, NULL, NULL, 'uploads/products/1775297317_white.jpg', '1', 5, 5, '2026-04-04 12:08:37', '2026-06-21 10:13:15'),
 (105, 4, 'SM02', 4200.00, 13, NULL, NULL, 'uploads/products/1775297317_black new.webp', '1', 5, 5, '2026-04-04 12:08:37', '2026-06-21 10:13:15'),
-(106, 5, 'FS01', 400.00, 15, NULL, NULL, 'uploads/products/1775298386_green.webp', '1', 5, 5, '2026-04-04 12:09:04', '2026-06-16 10:59:28'),
-(107, 5, 'FS02', 420.00, 12, NULL, NULL, 'uploads/products/1775298386_navy blue.webp', '1', 5, 5, '2026-04-04 12:09:04', '2026-06-16 10:59:28'),
-(108, 5, 'FS03', 450.00, 12, NULL, NULL, 'uploads/products/1775298386_sky.webp', '1', 5, 5, '2026-04-04 12:09:04', '2026-06-16 10:59:28'),
-(109, 5, 'FS04', 500.00, 10, NULL, NULL, 'uploads/products/1775298386_pink.webp', '1', 5, 5, '2026-04-04 12:23:14', '2026-06-16 10:59:28'),
-(110, 5, 'FS05', 430.00, 20, NULL, NULL, 'uploads/products/1775298386_orange.webp', '1', 5, 5, '2026-04-04 12:24:27', '2026-06-16 10:59:28');
+(106, 5, 'FS01', 400.00, 15, 'Green', 'XL', 'uploads/products/1775298386_green.webp', '1', 5, 5, '2026-04-04 12:09:04', '2026-07-01 12:01:00'),
+(107, 5, 'FS02', 420.00, 12, 'navy Blue', NULL, 'uploads/products/1775298386_navy blue.webp', '1', 5, 5, '2026-04-04 12:09:04', '2026-07-01 12:01:00'),
+(108, 5, 'FS03', 450.00, 12, 'Sky', NULL, 'uploads/products/1775298386_sky.webp', '1', 5, 5, '2026-04-04 12:09:04', '2026-07-01 12:01:00'),
+(109, 5, 'FS04', 500.00, 10, 'Pink', NULL, 'uploads/products/1775298386_pink.webp', '1', 5, 5, '2026-04-04 12:23:14', '2026-07-01 12:01:00'),
+(110, 5, 'FS05', 430.00, 20, 'Orange', NULL, 'uploads/products/1775298386_orange.webp', '1', 5, 5, '2026-04-04 12:24:27', '2026-07-01 12:01:00');
 
 -- --------------------------------------------------------
 
@@ -573,7 +577,7 @@ INSERT INTO `users` (`id`, `name`, `email`, `place`, `phonenumber`, `password`, 
 (1, 'Thrive Boost', 'thriveboosttech@gmail.com', 'sivakasi', '6383786437', '$2y$10$pTf941lweksalsmXjZhYaup5xEa/aksR0Ve13R6rZqbcFdBl.5riK', NULL, 1, 1, NULL, '2026-04-16 07:12:46', '2026-03-22 19:41:10', '2026-03-22 22:34:38', 1),
 (2, 'Prabha', 'viperprabhakaran@gmail.com', 'sivakasi', '6383786437', '$2y$10$ixF3UcwcoSyv8SIdBQMtk.ZmfLOsr/lnxbyu1G2gGHRaZfXgMMgKm', NULL, 3, NULL, NULL, '2026-07-01 04:39:52', '2026-03-22 20:14:11', '2026-07-01 10:09:52', 1),
 (3, 'prabha', 'thriveprabha@gmail.com', NULL, NULL, '$2y$10$7pCPIEgSPLkqujOhoF.myec0WbeSpGMxNCWLWXlm90vg2Z/3H.Hha', NULL, 3, NULL, NULL, '2026-04-16 07:12:46', '2026-03-23 13:32:24', '2026-03-23 13:32:24', 1),
-(5, 'Prabha admin', 'thriveboostbill@gmail.com', 'Sivakasi', '6383786437', '$2y$10$22gEv2pvnee5VydCBRkOQ.sgxHUxVdAHiQ6ZEN28HmX4EDOA.AVOq', NULL, 2, NULL, NULL, '2026-06-30 05:26:30', '2026-03-23 00:00:00', '2026-06-30 10:56:30', 1),
+(5, 'Prabha admin', 'thriveboostbill@gmail.com', 'Sivakasi', '6383786437', '$2y$10$22gEv2pvnee5VydCBRkOQ.sgxHUxVdAHiQ6ZEN28HmX4EDOA.AVOq', NULL, 2, NULL, NULL, '2026-07-01 05:20:30', '2026-03-23 00:00:00', '2026-07-01 10:50:30', 1),
 (6, 'Ganesh Krishna', 'gk3946020@gmail.com', 'Srivi', '63802 49114', '$2y$10$w9DdfLslL228GYePxDxaA.cGh9i9E3bB3aJ0RqZAJeBvhlM8lfqx.', NULL, 2, NULL, NULL, '2026-04-16 07:12:46', '2026-03-23 00:00:00', '2026-04-13 11:32:28', 1);
 
 -- --------------------------------------------------------
@@ -595,13 +599,15 @@ CREATE TABLE `variant_attributes` (
 --
 
 INSERT INTO `variant_attributes` (`id`, `variant_id`, `name`, `value`, `created_at`) VALUES
-(112, 106, 'Color', 'Green', '2026-06-16 10:59:28'),
-(113, 107, 'Color', 'navy Blue', '2026-06-16 10:59:28'),
-(114, 108, 'Color', 'Sky', '2026-06-16 10:59:28'),
-(115, 109, 'Color', 'Pink', '2026-06-16 10:59:28'),
-(116, 110, 'Color', 'Orange', '2026-06-16 10:59:28'),
 (117, 104, 'Color', 'White', '2026-06-16 10:59:36'),
-(118, 105, 'Color', 'Black', '2026-06-16 10:59:36');
+(118, 105, 'Color', 'Black', '2026-06-16 10:59:36'),
+(133, 106, 'Color', 'Green', '2026-07-01 12:01:00'),
+(134, 106, 'Size', 'XL', '2026-07-01 12:01:00'),
+(135, 106, 'Size', 'L', '2026-07-01 12:01:00'),
+(136, 107, 'Color', 'navy Blue', '2026-07-01 12:01:00'),
+(137, 108, 'Color', 'Sky', '2026-07-01 12:01:00'),
+(138, 109, 'Color', 'Pink', '2026-07-01 12:01:00'),
+(139, 110, 'Color', 'Orange', '2026-07-01 12:01:00');
 
 --
 -- Indexes for dumped tables
@@ -799,13 +805,13 @@ ALTER TABLE `feedbacks`
 -- AUTO_INCREMENT for table `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `order_items`
 --
 ALTER TABLE `order_items`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT for table `password_reset_tokens`
@@ -853,7 +859,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `variant_attributes`
 --
 ALTER TABLE `variant_attributes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=119;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=140;
 
 --
 -- Constraints for dumped tables
